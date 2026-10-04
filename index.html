@@ -80,13 +80,48 @@
   onlyDigits('#nationalId',14);onlyDigits('#phone',11);onlyDigits('#searchNational',14);onlyDigits('#searchPhone',11);
   ['#paidAmount','#remainingAmount'].forEach(id=>$(id).addEventListener('input',e=>e.target.value=e.target.value.replace(/[^0-9.]/g,'')));
 
-  function switchPage(name){$$('.page').forEach(x=>x.classList.add('hidden'));$('#'+name+'Page').classList.remove('hidden');if(name==='inquiry')loadInquiry();if(name==='requests')loadRequests();}
+  const ROUTES={home:'/home',inquiry:'/inquiry',add:'/add',requests:'/requests'};
+  function routeToPage(path){
+    const clean=(path||'/').replace(/\\/+$/,'')||'/';
+    if(clean==='/' || clean==='/index.html') return 'login';
+    const match=Object.entries(ROUTES).find(([,url])=>url===clean);
+    return match?match[0]:'home';
+  }
+  function switchPage(name,{push=true}={}){
+    if(currentRole==='guest' && name==='requests') name='home';
+    if(push){
+      const target=ROUTES[name]||'/home';
+      if(location.pathname!==target) history.pushState({page:name},'',target);
+    }
+    if(name==='login'){
+      $('#loginView').classList.remove('hidden');
+      $('#appView').classList.add('hidden');
+      return;
+    }
+    $('#loginView').classList.add('hidden');
+    $('#appView').classList.remove('hidden');
+    $$('.page').forEach(x=>x.classList.add('hidden'));
+    const page=$('#'+name+'Page');
+    if(page) page.classList.remove('hidden');
+    if(name==='inquiry') loadInquiry();
+    if(name==='requests') loadRequests();
+  }
   $$('[data-page]').forEach(b=>b.addEventListener('click',()=>switchPage(b.dataset.page)));
+  window.addEventListener('popstate',()=>{
+    const page=routeToPage(location.pathname);
+    if(page==='login'){
+      if(currentRole) switchPage('home',{push:false});
+      else switchPage('login',{push:false});
+    }else{
+      if(!currentRole) return enterApp('guest',{fromRoute:true});
+      switchPage(page,{push:false});
+    }
+  });
   $('#showAdminBtn').onclick=()=>$('#adminLoginBox').classList.toggle('hidden');
   $('#guestBtn').onclick=()=>enterApp('guest');
-  async function enterApp(role){currentRole=role;$('#loginView').classList.add('hidden');$('#appView').classList.remove('hidden');$('#roleLabel').textContent=role==='admin'?'Admin':'Guest';$('#requestsNav').classList.toggle('hidden',role!=='admin');$('#requestsCard').classList.toggle('hidden',role!=='admin');if(role==='admin')loadPendingCount();switchPage('home')}
+  async function enterApp(role,opts={}){currentRole=role;$('#loginView').classList.add('hidden');$('#appView').classList.remove('hidden');$('#roleLabel').textContent=role==='admin'?'Admin':'Guest';$('#requestsNav').classList.toggle('hidden',role!=='admin');$('#requestsCard').classList.toggle('hidden',role!=='admin');if(role==='admin')loadPendingCount();const requested=routeToPage(location.pathname);const page=(requested==='login'||(requested==='requests'&&role!=='admin'))?'home':requested;switchPage(page,{push:!opts.fromRoute});}
   $('#adminLoginBtn').onclick=async()=>{const username=$('#adminEmail').value.trim().toLowerCase(),password=$('#adminPassword').value;if(!username||!password)return toast('اكتب اسم المستخدم وكلمة المرور');if(!/^[a-z0-9._-]+$/.test(username))return toast('اسم المستخدم يجب أن يحتوي على حروف إنجليزية أو أرقام فقط');const email=username+'@gmail.com';const {data,error}=await sb.auth.signInWithPassword({email,password});if(error)return toast('بيانات الأدمن غير صحيحة');const {data:profile,error:pErr}=await sb.from('admin_profiles').select('user_id').eq('user_id',data.user.id).maybeSingle();if(pErr||!profile){await sb.auth.signOut();return toast('هذا الحساب ليس أدمن');}enterApp('admin');startRequestRealtime()};
-  $('#logoutBtn').onclick=async()=>{if(currentRole==='admin')await sb.auth.signOut();location.reload()};
+  $('#logoutBtn').onclick=async()=>{if(currentRole==='admin')await sb.auth.signOut();currentRole='guest';history.replaceState({},'', '/');location.reload()};
 
   $('#caseType').onchange=renderDynamic;
   function renderDynamic(){const type=$('#caseType').value,d=$('#dynamicFields');d.innerHTML='';if(type==='بدل تالف أو فاقد')d.innerHTML=`<div class="field"><label>المكتب التابع له *</label><input id="officeName" class="input" maxlength="120"></div>`;
@@ -131,7 +166,7 @@
 
   let requestChannel=null;
   function startRequestRealtime(){if(requestChannel||currentRole!=='admin')return;requestChannel=sb.channel('pending-requests-counter').on('postgres_changes',{event:'*',schema:'public',table:'requests'},()=>{loadPendingCount();if(!$('#requestsPage').classList.contains('hidden'))loadRequests()}).subscribe()}
-  (async()=>{const {data}=await sb.auth.getSession();if(data.session){const {data:p}=await sb.from('admin_profiles').select('user_id').eq('user_id',data.session.user.id).maybeSingle();if(p){enterApp('admin');startRequestRealtime()}}})();
+  (async()=>{const {data}=await sb.auth.getSession();if(data.session){const {data:p}=await sb.from('admin_profiles').select('user_id').eq('user_id',data.session.user.id).maybeSingle();if(p){enterApp('admin',{fromRoute:true});startRequestRealtime()}}else if(location.pathname!=='/'){enterApp('guest',{fromRoute:true})}})();
 </script>
 </body>
 </html>
