@@ -1,8 +1,7 @@
 export default async function handler(req, res) {
-  const VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN;
-  const ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN;
-  const PHONE_NUMBER_ID = process.env.WHATSAPP_PHONE_NUMBER_ID;
-
+ const VERIFY_TOKEN = "مصر الرقمية";
+const ACCESS_TOKEN = "EAANr2TqnNx8BShTS8chMHwFFpTUbsH8ZCWBcHGGnI4pkRECQKBfWi8dI2NZAmer29KWBCyt8ESXQ0q954xclL8Jgm2Chi5ZCZAZABf62HeVKMRZAt4DZAFYRjoOlGam9sF98dtxMgGeNtRW5Vg4gBzUohWb1CUxYtxgqokC7lTq7HqyfMblCINrOgBkVAMWCSZAbpABqWuNGP5YFNpfIRDAuSZCYnZBVOlRkZCzeQBtYfpuoJpXjSzmd4sebK5dkeRaZA229BLCd3gY9dviEmQZCjBkLs";
+const PHONE_NUMBER_ID = "+1 (555) 646-2622";
   // =========================
   // Meta Webhook Verification
   // =========================
