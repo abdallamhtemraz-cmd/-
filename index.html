@@ -1219,6 +1219,14 @@
 
             </div>
 
+            <button
+              id="refreshInquiry"
+              class="btn ghost"
+              type="button"
+            >
+              ↻ تحديث الاستعلام
+            </button>
+
           </div>
 
 
@@ -1345,8 +1353,9 @@
             <button
               id="refreshRequests"
               class="btn ghost"
+              type="button"
             >
-              تحديث
+              ↻ تحديث الطلبات
             </button>
 
           </div>
@@ -3309,6 +3318,44 @@
     };
 
 
+  // تحديث بيانات الاستعلام فقط بدون عمل Refresh للصفحة
+  $('#refreshInquiry').onclick =
+    async () => {
+
+      const btn = $('#refreshInquiry');
+
+      if(btn.disabled)
+        return;
+
+      btn.disabled = true;
+
+      const oldText = btn.textContent;
+
+      btn.textContent = '⟳ جاري التحديث...';
+
+      try{
+
+        await loadInquiry(false);
+
+        toast('تم تحديث بيانات الاستعلام');
+
+      }catch(err){
+
+        console.error(err);
+
+        toast('تعذر تحديث الاستعلام');
+
+      }finally{
+
+        btn.disabled = false;
+
+        btn.textContent = oldText;
+
+      }
+
+    };
+
+
   /* =====================================================
      ESCAPE HTML
   ===================================================== */
@@ -3893,8 +3940,40 @@
 
 
   $('#refreshRequests').onclick =
-    () =>
-      loadRequests(true);
+    async () => {
+
+      const btn = $('#refreshRequests');
+
+      if(btn.disabled)
+        return;
+
+      btn.disabled = true;
+
+      const oldText = btn.textContent;
+
+      btn.textContent = '⟳ جاري التحديث...';
+
+      try{
+
+        await loadRequests(true);
+
+        toast('تم تحديث الطلبات');
+
+      }catch(err){
+
+        console.error(err);
+
+        toast('تعذر تحديث الطلبات');
+
+      }finally{
+
+        btn.disabled = false;
+
+        btn.textContent = oldText;
+
+      }
+
+    };
 
 
   /* =====================================================
