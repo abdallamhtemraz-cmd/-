@@ -3765,69 +3765,6 @@
   }
 
 
-  /* old renderer kept below only for compatibility */
-  function renderAdminImagesLegacy(x){
-
-      <div
-        class="field"
-        style="margin-top:14px"
-      >
-
-        <label>
-          صور الطلب
-        </label>
-
-
-        <div class="details-photo-grid">
-
-          ${urls
-            .map(
-              (u,i) => `
-
-                <div class="details-photo-card">
-
-                  <img
-                    src="${esc(u)}"
-                    alt="صورة ${i+1}"
-                  >
-
-
-                  <div class="details-photo-actions">
-
-                    <button
-                      class="btn ghost"
-                      type="button"
-                      onclick="downloadImage('${encodeURIComponent(u)}','${x.serial_no || 'request'}-${i+1}')"
-                    >
-                      حفظ
-                    </button>
-
-                  </div>
-
-                </div>
-
-              `
-            )
-            .join('')}
-
-        </div>
-
-
-        <button
-          class="btn primary"
-          type="button"
-          onclick="downloadAllImages('${x.id}')"
-        >
-          ⬇ حفظ كل الصور
-        </button>
-
-      </div>
-
-    `;
-
-  }
-
-
   $('#requestsPrev').onclick =
     () => {
 
