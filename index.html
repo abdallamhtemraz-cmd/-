@@ -4,272 +4,5004 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>نظام إدارة الطلبات</title>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
-    :root{--bg:#07111f;--panel:#0c1a2c;--panel2:#10243a;--line:#203b57;--txt:#f6f9fc;--muted:#9fb1c4;--primary:#4f8cff;--primary2:#75a8ff;--success:#24c879;--danger:#ff5f6d;--warn:#ffb84d;--shadow:0 20px 55px rgba(0,0,0,.28);--r:22px}
-    *{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif;background:radial-gradient(circle at top right,#102d4f 0,#07111f 42%,#050b14 100%);color:var(--txt)}
-    body{min-height:100vh}button,input,select,textarea{font:inherit}button{cursor:pointer}.hidden{display:none!important}
-    .app{width:min(1440px,100%);min-height:100vh;margin:auto;padding:clamp(12px,2vw,28px)}
-    .glass{background:linear-gradient(180deg,rgba(16,36,58,.92),rgba(8,22,37,.94));border:1px solid rgba(126,165,204,.18);box-shadow:var(--shadow);backdrop-filter:blur(18px)}
-    .login{min-height:calc(100vh - 40px);display:grid;place-items:center}.login-card{width:min(520px,100%);padding:clamp(22px,5vw,42px);border-radius:30px;text-align:center}
-    .logo{width:72px;height:72px;margin:0 auto 18px;border-radius:22px;display:grid;place-items:center;background:linear-gradient(135deg,var(--primary),#745cff);font-size:34px;box-shadow:0 14px 35px rgba(79,140,255,.3)}
-    h1,h2,h3,p{margin-top:0}.muted{color:var(--muted)}.login-actions{display:grid;gap:12px;margin-top:28px}.btn{border:0;border-radius:14px;padding:13px 18px;font-weight:800;color:#fff;transition:.2s;min-height:48px}.btn:hover{transform:translateY(-1px);filter:brightness(1.06)}.btn:disabled{opacity:.55;cursor:not-allowed;transform:none}.primary{background:linear-gradient(135deg,var(--primary),#6a67ff)}.success{background:linear-gradient(135deg,#16b86b,var(--success))}.danger{background:linear-gradient(135deg,#f04755,var(--danger))}.ghost{background:#142b44;border:1px solid #244663}.warn{background:linear-gradient(135deg,#e89428,var(--warn));color:#20170b}
-    .admin-login{margin-top:16px;text-align:right}.field{display:flex;flex-direction:column;gap:7px}.field label{font-size:14px;font-weight:800;color:#dbe8f5}.input,.select,.textarea{width:100%;border:1px solid #284763;background:#081827;color:var(--txt);border-radius:13px;padding:12px 13px;outline:none;min-height:46px}.textarea{min-height:100px;resize:vertical}.input:focus,.select:focus,.textarea:focus{border-color:#6198ff;box-shadow:0 0 0 3px rgba(79,140,255,.12)}
-    .topbar{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 16px;border-radius:20px;position:sticky;top:10px;z-index:30}.brand{display:flex;align-items:center;gap:10px}.brand-badge{width:40px;height:40px;border-radius:13px;background:linear-gradient(135deg,var(--primary),#745cff);display:grid;place-items:center;font-weight:900}.role{font-size:12px;padding:5px 9px;border-radius:999px;background:#173557;color:#bcd4ee}.nav{display:flex;gap:8px;flex-wrap:wrap}.nav .btn{min-height:40px;padding:9px 13px}.page{margin-top:18px}.hero{padding:clamp(20px,3vw,32px);border-radius:var(--r);margin-bottom:16px}.hero h1{font-size:clamp(24px,4vw,38px);margin-bottom:8px}.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.action-card{padding:24px;border-radius:20px;border:1px solid #23415d;background:linear-gradient(180deg,#0e2238,#0a1726);text-align:right;transition:.2s}.action-card:hover{transform:translateY(-3px);border-color:#4f8cff}.action-card .icon{font-size:28px;margin-bottom:16px}.action-card h3{margin-bottom:7px}
-    .panel{padding:clamp(16px,2.5vw,28px);border-radius:var(--r)}.panel-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.span-2{grid-column:1/-1}.money-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}.form-actions{display:flex;gap:10px;justify-content:flex-start;flex-wrap:wrap;margin-top:8px}.error{color:#ff9aa4;font-size:12px;min-height:16px}.note{font-size:12px;color:var(--muted)}
-    .toolbar{display:grid;grid-template-columns:repeat(3,minmax(180px,1fr));gap:10px;margin-bottom:16px}.table-wrap{width:100%;overflow:auto;border:1px solid #1f3b56;border-radius:16px;background:#071521}.table{width:100%;min-width:1180px;border-collapse:collapse}.table th,.table td{padding:13px 12px;border-bottom:1px solid #18344f;text-align:right;white-space:nowrap}.table th{position:sticky;top:0;background:#10283f;color:#d8e9fb;z-index:2}.table tbody tr{transition:.15s}.table tbody tr:hover{background:#0f2235}.clickable{cursor:pointer}.badge{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:900}.pending{background:rgba(255,184,77,.14);color:#ffc66d}.done{background:rgba(36,200,121,.14);color:#61e5a5}.rejected{background:rgba(255,95,109,.14);color:#ff9aa4}.requests{display:grid;gap:14px}.request-card{border:1px solid #23445f;border-radius:18px;padding:18px;background:#091a2a}.request-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}.request-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:14px}.kv{background:#0d2236;border:1px solid #1d3b57;border-radius:13px;padding:11px}.kv small{display:block;color:var(--muted);margin-bottom:4px}.modal{position:fixed;inset:0;background:rgba(1,7,14,.72);display:grid;place-items:center;padding:14px;z-index:100}.modal-card{width:min(850px,100%);max-height:92vh;overflow:auto;border-radius:24px;padding:22px}.details-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.toast{position:fixed;left:18px;bottom:18px;z-index:200;background:#0d2438;border:1px solid #2b4c69;color:#fff;padding:12px 16px;border-radius:14px;box-shadow:var(--shadow);max-width:min(360px,calc(100vw - 36px))}.empty{text-align:center;padding:34px;color:var(--muted)}
-    .image-upload{border:1px dashed #315b7d;background:#081827;border-radius:16px;padding:14px}
-    .image-upload-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-    .image-preview{width:110px;height:110px;border-radius:14px;object-fit:cover;border:1px solid #315472;background:#0d2236}
-    .image-preview.hidden{display:none!important}.image-note{font-size:12px;color:var(--muted)}
-    .details-photo{width:min(260px,100%);max-height:300px;object-fit:contain;border-radius:18px;border:1px solid #315472;background:#081827;display:block;margin:0 auto 16px}
-    .notify-dot{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:#f04755;color:#fff;font-size:11px;font-weight:900;margin-right:5px}
-    .submit-busy{pointer-events:none;opacity:.65}
-    .kv{position:relative}.kv-copy{position:absolute;top:8px;left:8px;border:1px solid #315472;background:#102b43;color:#dceeff;border-radius:8px;width:30px;height:30px;display:grid;place-items:center;cursor:pointer;font-size:15px;transition:.15s}.kv-copy:hover{transform:translateY(-1px);background:#173b5a}.kv-copy.copied{background:rgba(36,200,121,.18);border-color:#24c879;color:#61e5a5}.kv-value{padding-left:34px;word-break:break-word}.copy-toast{font-size:12px}.image-upload-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.image-upload-row .input{flex:1;min-width:220px}.image-preview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;margin-top:12px}.image-thumb{position:relative;border:1px solid #284763;border-radius:14px;overflow:hidden;background:#071521;aspect-ratio:1/1}.image-thumb img{width:100%;height:100%;object-fit:cover;display:block}.image-thumb button{position:absolute;top:7px;left:7px;width:32px;height:32px;border:0;border-radius:9px;background:rgba(0,0,0,.75);color:#fff;font-weight:900}.image-thumb button:hover{background:#d9364f}.details-photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:18px}.details-photo-card{position:relative;border:1px solid #284763;border-radius:14px;overflow:hidden;background:#071521}.details-photo-card img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block}.details-photo-actions{display:flex;gap:7px;padding:8px}.details-photo-actions .btn{min-height:38px;padding:8px 10px;flex:1}.image-note{font-size:12px;color:var(--muted);line-height:1.7}.submit-busy{position:relative}.notification-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#ff5f6d;margin-right:5px;vertical-align:middle;box-shadow:0 0 0 4px rgba(255,95,109,.12)}.count-badge{display:inline-grid;place-items:center;min-width:24px;height:24px;padding:0 7px;margin-right:6px;border-radius:999px;background:#f04755;color:#fff;font-size:12px;font-weight:900;vertical-align:middle;box-shadow:0 4px 12px rgba(240,71,85,.25)}.count-badge.zero{background:#29435b;color:#a9bdd0;box-shadow:none}
-    @media(max-width:900px){.cards{grid-template-columns:1fr 1fr}.request-grid{grid-template-columns:repeat(2,1fr)}.toolbar{grid-template-columns:1fr}.topbar{position:static}.grid{grid-template-columns:1fr}.span-2{grid-column:auto}}
-    @media(max-width:600px){.app{padding:10px}.topbar{align-items:flex-start}.brand-meta{display:none}.nav{width:100%}.topbar{flex-wrap:wrap}.nav .btn{flex:1}.cards{grid-template-columns:1fr}.money-row{grid-template-columns:1fr}.request-grid,.details-grid{grid-template-columns:1fr}.panel{padding:15px}.login{min-height:calc(100vh - 20px)}.form-actions .btn{flex:1}.hero{padding:20px}.request-card{padding:14px}}
+    :root{
+      --bg:#07111f;
+      --panel:#0c1a2c;
+      --panel2:#10243a;
+      --line:#203b57;
+      --txt:#f6f9fc;
+      --muted:#9fb1c4;
+      --primary:#4f8cff;
+      --primary2:#75a8ff;
+      --success:#24c879;
+      --danger:#ff5f6d;
+      --warn:#ffb84d;
+      --shadow:0 20px 55px rgba(0,0,0,.28);
+      --r:22px
+    }
+
+    *{box-sizing:border-box}
+
+    html,body{
+      margin:0;
+      min-height:100%;
+      font-family:system-ui,-apple-system,"Segoe UI",Tahoma,Arial,sans-serif;
+      background:radial-gradient(circle at top right,#102d4f 0,#07111f 42%,#050b14 100%);
+      color:var(--txt)
+    }
+
+    body{min-height:100vh}
+
+    button,input,select,textarea{font:inherit}
+    button{cursor:pointer}
+    .hidden{display:none!important}
+
+    .app{
+      width:min(1440px,100%);
+      min-height:100vh;
+      margin:auto;
+      padding:clamp(12px,2vw,28px)
+    }
+
+    .glass{
+      background:linear-gradient(180deg,rgba(16,36,58,.92),rgba(8,22,37,.94));
+      border:1px solid rgba(126,165,204,.18);
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(18px)
+    }
+
+    .login{
+      min-height:calc(100vh - 40px);
+      display:grid;
+      place-items:center
+    }
+
+    .login-card{
+      width:min(520px,100%);
+      padding:clamp(22px,5vw,42px);
+      border-radius:30px;
+      text-align:center
+    }
+
+    .logo{
+      width:72px;
+      height:72px;
+      margin:0 auto 18px;
+      border-radius:22px;
+      display:grid;
+      place-items:center;
+      background:linear-gradient(135deg,var(--primary),#745cff);
+      font-size:34px;
+      box-shadow:0 14px 35px rgba(79,140,255,.3)
+    }
+
+    h1,h2,h3,p{margin-top:0}
+    .muted{color:var(--muted)}
+
+    .login-actions{
+      display:grid;
+      gap:12px;
+      margin-top:28px
+    }
+
+    .btn{
+      border:0;
+      border-radius:14px;
+      padding:13px 18px;
+      font-weight:800;
+      color:#fff;
+      transition:.2s;
+      min-height:48px
+    }
+
+    .btn:hover{
+      transform:translateY(-1px);
+      filter:brightness(1.06)
+    }
+
+    .btn:disabled{
+      opacity:.55;
+      cursor:not-allowed;
+      transform:none
+    }
+
+    .primary{background:linear-gradient(135deg,var(--primary),#6a67ff)}
+    .success{background:linear-gradient(135deg,#16b86b,var(--success))}
+    .danger{background:linear-gradient(135deg,#f04755,var(--danger))}
+    .ghost{background:#142b44;border:1px solid #244663}
+    .warn{background:linear-gradient(135deg,#e89428,var(--warn));color:#20170b}
+
+    .admin-login{
+      margin-top:16px;
+      text-align:right
+    }
+
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:7px
+    }
+
+    .field label{
+      font-size:14px;
+      font-weight:800;
+      color:#dbe8f5
+    }
+
+    .input,.select,.textarea{
+      width:100%;
+      border:1px solid #284763;
+      background:#081827;
+      color:var(--txt);
+      border-radius:13px;
+      padding:12px 13px;
+      outline:none;
+      min-height:46px
+    }
+
+    .textarea{
+      min-height:100px;
+      resize:vertical
+    }
+
+    .input:focus,.select:focus,.textarea:focus{
+      border-color:#6198ff;
+      box-shadow:0 0 0 3px rgba(79,140,255,.12)
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      padding:14px 16px;
+      border-radius:20px;
+      position:sticky;
+      top:10px;
+      z-index:30
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px
+    }
+
+    .brand-badge{
+      width:40px;
+      height:40px;
+      border-radius:13px;
+      background:linear-gradient(135deg,var(--primary),#745cff);
+      display:grid;
+      place-items:center;
+      font-weight:900
+    }
+
+    .role{
+      font-size:12px;
+      padding:5px 9px;
+      border-radius:999px;
+      background:#173557;
+      color:#bcd4ee
+    }
+
+    .nav{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap
+    }
+
+    .nav .btn{
+      min-height:40px;
+      padding:9px 13px
+    }
+
+    .page{margin-top:18px}
+
+    .hero{
+      padding:clamp(20px,3vw,32px);
+      border-radius:var(--r);
+      margin-bottom:16px
+    }
+
+    .hero h1{
+      font-size:clamp(24px,4vw,38px);
+      margin-bottom:8px
+    }
+
+    .cards{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:14px
+    }
+
+    .action-card{
+      padding:24px;
+      border-radius:20px;
+      border:1px solid #23415d;
+      background:linear-gradient(180deg,#0e2238,#0a1726);
+      text-align:right;
+      transition:.2s
+    }
+
+    .action-card:hover{
+      transform:translateY(-3px);
+      border-color:#4f8cff
+    }
+
+    .action-card .icon{
+      font-size:28px;
+      margin-bottom:16px
+    }
+
+    .action-card h3{margin-bottom:7px}
+
+    .panel{
+      padding:clamp(16px,2.5vw,28px);
+      border-radius:var(--r)
+    }
+
+    .panel-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-bottom:20px;
+      flex-wrap:wrap
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:16px
+    }
+
+    .span-2{grid-column:1/-1}
+
+    .money-row{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:16px
+    }
+
+    .form-actions{
+      display:flex;
+      gap:10px;
+      justify-content:flex-start;
+      flex-wrap:wrap;
+      margin-top:8px
+    }
+
+    .error{
+      color:#ff9aa4;
+      font-size:12px;
+      min-height:16px
+    }
+
+    .note{
+      font-size:12px;
+      color:var(--muted)
+    }
+
+    .toolbar{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(180px,1fr));
+      gap:10px;
+      margin-bottom:16px
+    }
+
+    .table-wrap{
+      width:100%;
+      overflow:auto;
+      border:1px solid #1f3b56;
+      border-radius:16px;
+      background:#071521
+    }
+
+    .table{
+      width:100%;
+      min-width:1180px;
+      border-collapse:collapse
+    }
+
+    .table th,.table td{
+      padding:13px 12px;
+      border-bottom:1px solid #18344f;
+      text-align:right;
+      white-space:nowrap
+    }
+
+    .table th{
+      position:sticky;
+      top:0;
+      background:#10283f;
+      color:#d8e9fb;
+      z-index:2
+    }
+
+    .table tbody tr{transition:.15s}
+    .table tbody tr:hover{background:#0f2235}
+
+    .clickable{cursor:pointer}
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:900
+    }
+
+    .pending{
+      background:rgba(255,184,77,.14);
+      color:#ffc66d
+    }
+
+    .done{
+      background:rgba(36,200,121,.14);
+      color:#61e5a5
+    }
+
+    .rejected{
+      background:rgba(255,95,109,.14);
+      color:#ff9aa4
+    }
+
+    .requests{
+      display:grid;
+      gap:14px
+    }
+
+    .request-card{
+      border:1px solid #23445f;
+      border-radius:18px;
+      padding:18px;
+      background:#091a2a
+    }
+
+    .request-top{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:flex-start;
+      flex-wrap:wrap
+    }
+
+    .request-grid{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:12px;
+      margin-top:14px
+    }
+
+    .kv{
+      position:relative;
+      background:#0d2236;
+      border:1px solid #1d3b57;
+      border-radius:13px;
+      padding:11px
+    }
+
+    .kv small{
+      display:block;
+      color:var(--muted);
+      margin-bottom:4px
+    }
+
+    .kv-copy{
+      position:absolute;
+      top:8px;
+      left:8px;
+      border:1px solid #315472;
+      background:#102b43;
+      color:#dceeff;
+      border-radius:8px;
+      width:30px;
+      height:30px;
+      display:grid;
+      place-items:center;
+      cursor:pointer;
+      font-size:15px;
+      transition:.15s
+    }
+
+    .kv-copy:hover{
+      transform:translateY(-1px);
+      background:#173b5a
+    }
+
+    .kv-copy.copied{
+      background:rgba(36,200,121,.18);
+      border-color:#24c879;
+      color:#61e5a5
+    }
+
+    .kv-value{
+      padding-left:34px;
+      word-break:break-word
+    }
+
+    .modal{
+      position:fixed;
+      inset:0;
+      background:rgba(1,7,14,.72);
+      display:grid;
+      place-items:center;
+      padding:14px;
+      z-index:100
+    }
+
+    .modal-card{
+      width:min(850px,100%);
+      max-height:92vh;
+      overflow:auto;
+      border-radius:24px;
+      padding:22px
+    }
+
+    .details-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:12px
+    }
+
+    .toast{
+      position:fixed;
+      left:18px;
+      bottom:18px;
+      z-index:200;
+      background:#0d2438;
+      border:1px solid #2b4c69;
+      color:#fff;
+      padding:12px 16px;
+      border-radius:14px;
+      box-shadow:var(--shadow);
+      max-width:min(360px,calc(100vw - 36px))
+    }
+
+    .empty{
+      text-align:center;
+      padding:34px;
+      color:var(--muted)
+    }
+
+    .image-upload{
+      border:1px dashed #315b7d;
+      background:#081827;
+      border-radius:16px;
+      padding:14px
+    }
+
+    .image-upload-row{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap
+    }
+
+    .image-upload-row .input{
+      flex:1;
+      min-width:220px
+    }
+
+    .image-preview-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(130px,1fr));
+      gap:12px;
+      margin-top:12px
+    }
+
+    .image-thumb{
+      position:relative;
+      border:1px solid #284763;
+      border-radius:14px;
+      overflow:hidden;
+      background:#071521;
+      aspect-ratio:1/1
+    }
+
+    .image-thumb img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block
+    }
+
+    .image-thumb button{
+      position:absolute;
+      top:7px;
+      left:7px;
+      width:32px;
+      height:32px;
+      border:0;
+      border-radius:9px;
+      background:rgba(0,0,0,.75);
+      color:#fff;
+      font-weight:900
+    }
+
+    .image-thumb button:hover{background:#d9364f}
+
+    .details-photo-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+      gap:12px;
+      margin-bottom:18px
+    }
+
+    .details-photo-card{
+      position:relative;
+      border:1px solid #284763;
+      border-radius:14px;
+      overflow:hidden;
+      background:#071521
+    }
+
+    .details-photo-card img{
+      width:100%;
+      aspect-ratio:1/1;
+      object-fit:cover;
+      display:block
+    }
+
+    .details-photo-actions{
+      display:flex;
+      gap:7px;
+      padding:8px
+    }
+
+    .details-photo-actions .btn{
+      min-height:38px;
+      padding:8px 10px;
+      flex:1
+    }
+
+    .image-note{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.7
+    }
+
+    .submit-busy{
+      pointer-events:none;
+      opacity:.65
+    }
+
+    .notify-dot{
+      display:inline-grid;
+      place-items:center;
+      min-width:20px;
+      height:20px;
+      padding:0 5px;
+      border-radius:999px;
+      background:#f04755;
+      color:#fff;
+      font-size:11px;
+      font-weight:900;
+      margin-right:5px
+    }
+
+    .count-badge{
+      display:inline-grid;
+      place-items:center;
+      min-width:24px;
+      height:24px;
+      padding:0 7px;
+      margin-right:6px;
+      border-radius:999px;
+      background:#f04755;
+      color:#fff;
+      font-size:12px;
+      font-weight:900;
+      vertical-align:middle
+    }
+
+    .count-badge.zero{
+      background:#29435b;
+      color:#a9bdd0;
+      box-shadow:none
+    }
+
+    @media(max-width:900px){
+      .cards{grid-template-columns:1fr 1fr}
+      .request-grid{grid-template-columns:repeat(2,1fr)}
+      .toolbar{grid-template-columns:1fr}
+      .topbar{position:static}
+      .grid{grid-template-columns:1fr}
+      .span-2{grid-column:auto}
+    }
+
+    @media(max-width:600px){
+      .app{padding:10px}
+      .topbar{align-items:flex-start}
+      .brand-meta{display:none}
+      .nav{width:100%}
+      .topbar{flex-wrap:wrap}
+      .nav .btn{flex:1}
+      .cards{grid-template-columns:1fr}
+      .money-row{grid-template-columns:1fr}
+      .request-grid,.details-grid{grid-template-columns:1fr}
+      .panel{padding:15px}
+      .login{min-height:calc(100vh - 20px)}
+      .form-actions .btn{flex:1}
+      .hero{padding:20px}
+      .request-card{padding:14px}
+    }
   </style>
 </head>
+
 <body>
+
 <div class="app">
+
+  <!-- LOGIN -->
   <section id="loginView" class="login">
+
     <div class="login-card glass">
-      <div class="logo">✓</div><h1>نظام إدارة الطلبات</h1><p class="muted">اختر طريقة الدخول للمتابعة</p>
-      <div class="login-actions"><button id="guestBtn" class="btn primary">Guest</button><button id="showAdminBtn" class="btn ghost">Admin</button></div>
-      <div id="adminLoginBox" class="admin-login hidden">
-        <div class="field"><label>اسم المستخدم</label><div style="display:flex;direction:ltr;align-items:stretch;gap:0"><input id="adminEmail" class="input" type="text" inputmode="email" autocomplete="username" placeholder="admin" style="border-radius:13px 0 0 13px"><span style="display:flex;align-items:center;padding:0 12px;background:#10283f;border:1px solid #284763;border-right:0;border-radius:0 13px 13px 0;color:#9fb1c4;direction:ltr">@gmail.com</span></div><div class="note">اكتب اسم المستخدم فقط، مثل: admin</div></div>
-        <div class="field" style="margin-top:10px"><label>كلمة المرور</label><input id="adminPassword" class="input" type="password" autocomplete="current-password"></div>
-        <button id="adminLoginBtn" class="btn success" style="width:100%;margin-top:14px">تسجيل دخول الأدمن</button>
+
+      <div class="logo">✓</div>
+
+      <h1>نظام إدارة الطلبات</h1>
+
+      <p class="muted">
+        اختر طريقة الدخول للمتابعة
+      </p>
+
+      <div class="login-actions">
+
+        <button id="guestBtn" class="btn primary">
+          ضيف
+        </button>
+
+        <button id="showAdminBtn" class="btn ghost">
+          Admin
+        </button>
+
       </div>
+
+      <div id="adminLoginBox" class="admin-login hidden">
+
+        <div class="field">
+
+          <label>اسم المستخدم</label>
+
+          <div style="display:flex;direction:ltr;align-items:stretch;gap:0">
+
+            <input
+              id="adminEmail"
+              class="input"
+              type="text"
+              inputmode="text"
+              autocomplete="username"
+              placeholder="admin"
+              style="border-radius:13px 0 0 13px"
+            >
+
+            <span style="display:flex;align-items:center;padding:0 12px;background:#10283f;border:1px solid #284763;border-right:0;border-radius:0 13px 13px 0;color:#9fb1c4;direction:ltr">
+              @gmail.com
+            </span>
+
+          </div>
+
+          <div class="note">
+            اكتب اسم المستخدم فقط، مثل: admin
+          </div>
+
+        </div>
+
+        <div class="field" style="margin-top:10px">
+
+          <label>كلمة المرور</label>
+
+          <input
+            id="adminPassword"
+            class="input"
+            type="password"
+            autocomplete="current-password"
+          >
+
+        </div>
+
+        <button
+          id="adminLoginBtn"
+          class="btn success"
+          style="width:100%;margin-top:14px"
+        >
+          تسجيل دخول الأدمن
+        </button>
+
+      </div>
+
     </div>
+
   </section>
 
+
+  <!-- APP -->
   <section id="appView" class="hidden">
-    <header class="topbar glass"><div class="brand"><div class="brand-badge">✓</div><div class="brand-meta"><strong>نظام الطلبات</strong><div class="role" id="roleLabel">Guest</div></div></div><nav class="nav"><button class="btn ghost" data-page="home">الرئيسية</button><button class="btn ghost" data-page="inquiry">استعلام</button><button class="btn ghost" data-page="add">إضافة</button><button id="requestsNav" class="btn ghost hidden" data-page="requests">الطلبات <span id="requestsCount" class="count-badge">0</span><span id="requestNotifyDot" class="notify-dot hidden">!</span></button><button id="logoutBtn" class="btn danger">خروج</button></nav></header>
+
+    <header class="topbar glass">
+
+      <div class="brand">
+
+        <div class="brand-badge">✓</div>
+
+        <div class="brand-meta">
+
+          <strong>نظام الطلبات</strong>
+
+          <div class="role" id="roleLabel">
+            Guest
+          </div>
+
+        </div>
+
+      </div>
+
+      <nav class="nav">
+
+        <button
+          class="btn ghost"
+          data-page="home"
+        >
+          الرئيسية
+        </button>
+
+        <button
+          class="btn ghost"
+          data-page="inquiry"
+        >
+          استعلام
+        </button>
+
+        <button
+          class="btn ghost"
+          data-page="add"
+        >
+          إضافة
+        </button>
+
+        <button
+          id="requestsNav"
+          class="btn ghost hidden"
+          data-page="requests"
+        >
+          الطلبات
+
+          <span
+            id="requestsCount"
+            class="count-badge"
+          >
+            0
+          </span>
+
+          <span
+            id="requestNotifyDot"
+            class="notify-dot hidden"
+          >
+            !
+          </span>
+
+        </button>
+
+        <button
+          id="logoutBtn"
+          class="btn danger"
+        >
+          خروج
+        </button>
+
+      </nav>
+
+    </header>
+
 
     <main>
-      <section id="homePage" class="page"><div class="hero glass"><h1>مرحبًا بك 👋</h1><p class="muted">إدارة الطلبات والاستعلام عنها من أي جهاز.</p></div><div id="homeCards" class="cards"><button class="action-card" data-page="inquiry"><div class="icon">🔎</div><h3>استعلام</h3><p class="muted">ابحث بالاسم أو الرقم القومي أو الهاتف.</p></button><button class="action-card" data-page="add"><div class="icon">➕</div><h3>إضافة</h3><p class="muted">إرسال طلب جديد للمراجعة.</p></button><button id="requestsCard" class="action-card hidden" data-page="requests"><div class="icon">📋</div><h3>الطلبات</h3><p class="muted">مراجعة الطلبات وقبولها أو رفضها.</p></button></div></section>
 
-      <section id="addPage" class="page hidden"><div class="panel glass"><div class="panel-head"><div><h2>إضافة طلب جديد</h2><p class="muted">الحقول بعلامة * مطلوبة.</p></div></div>
-        <form id="requestForm" novalidate><div class="grid">
-          <div class="field"><label>الاسم رباعي *</label><input id="fullName" class="input" maxlength="100"><div class="error" data-e="fullName"></div></div>
-          <div class="field"><label>اسم الأم *</label><input id="motherName" class="input" maxlength="100"><div class="error" data-e="motherName"></div></div>
-          <div class="field"><label>الرقم القومي (14 رقم) *</label><input id="nationalId" class="input" inputmode="numeric" maxlength="14"><div class="error" data-e="nationalId"></div></div>
-          <div class="field"><label>رقم المصنع *</label><input id="factoryNumber" class="input" maxlength="40"><div class="error" data-e="factoryNumber"></div></div>
-          <div class="field"><label>رقم الهاتف (11 رقم) *</label><input id="phone" class="input" inputmode="numeric" maxlength="11"><div class="error" data-e="phone"></div></div>
-          <div class="money-row span-2"><div class="field"><label>دفع كام *</label><input id="paidAmount" class="input" inputmode="decimal"><div class="error" data-e="paidAmount"></div></div><div class="field"><label>المتبقي *</label><input id="remainingAmount" class="input" inputmode="decimal"><div class="error" data-e="remainingAmount"></div></div></div>
-          <div class="field span-2"><label>سبب الحالة *</label><select id="caseType" class="select"><option value="">اختر سبب الحالة</option><option value="بدل تالف أو فاقد">بدل تالف أو فاقد</option><option value="فصل">فصل</option><option value="ضم">ضم</option><option value="نقل محافظة أخرى">نقل محافظة أخرى</option></select><div class="error" data-e="caseType"></div></div>
-          <div id="dynamicFields" class="span-2"></div>
-          <div class="field span-2 image-upload">
-            <label>صور من الهاتف (اختياري)</label>
-            <div class="image-upload-row">
-              <input id="requestImages" class="input" type="file" accept="image/*" capture="environment" multiple>
-              <button id="removeAllImagesBtn" class="btn ghost" type="button">حذف كل الصور</button>
+      <!-- HOME -->
+      <section
+        id="homePage"
+        class="page"
+      >
+
+        <div class="hero glass">
+
+          <h1>
+            مرحبًا بك 👋
+          </h1>
+
+          <p class="muted">
+            إدارة الطلبات والاستعلام عنها من أي جهاز.
+          </p>
+
+        </div>
+
+        <div
+          id="homeCards"
+          class="cards"
+        >
+
+          <button
+            class="action-card"
+            data-page="inquiry"
+          >
+
+            <div class="icon">🔎</div>
+
+            <h3>
+              استعلام
+            </h3>
+
+            <p class="muted">
+              ابحث بالاسم أو الرقم القومي أو الهاتف.
+            </p>
+
+          </button>
+
+
+          <button
+            class="action-card"
+            data-page="add"
+          >
+
+            <div class="icon">➕</div>
+
+            <h3>
+              إضافة
+            </h3>
+
+            <p class="muted">
+              إرسال طلب جديد للمراجعة.
+            </p>
+
+          </button>
+
+
+          <button
+            id="requestsCard"
+            class="action-card hidden"
+            data-page="requests"
+          >
+
+            <div class="icon">📋</div>
+
+            <h3>
+              الطلبات
+            </h3>
+
+            <p class="muted">
+              مراجعة الطلبات وقبولها أو رفضها.
+            </p>
+
+          </button>
+
+        </div>
+
+      </section>
+
+
+      <!-- ADD -->
+      <section
+        id="addPage"
+        class="page hidden"
+      >
+
+        <div class="panel glass">
+
+          <div class="panel-head">
+
+            <div>
+
+              <h2>
+                إضافة طلب جديد
+              </h2>
+
+              <p class="muted">
+                بدون صور: كل البيانات مطلوبة. مع الصور: الاسم + الهاتف فقط.
+              </p>
+
             </div>
-            <div id="imagePreviewGrid" class="image-preview-grid"></div>
-            <div class="image-note">يمكنك اختيار أكثر من صورة. لو أضفت صورة واحدة أو أكثر، يكفي الاسم + رقم الهاتف لإرسال الطلب. لو بدون صور، لازم تكمل كل البيانات.</div>
+
           </div>
-          <div class="form-actions span-2"><button id="submitRequestBtn" class="btn success" type="submit">إرسال الطلب</button><button class="btn danger" type="button" id="cancelFormBtn">إلغاء</button></div>
-        </div></form>
-      </div></section>
 
-      <section id="inquiryPage" class="page hidden"><div class="panel glass"><div class="panel-head"><div><h2>الاستعلام</h2><p class="muted">اضغط على أي صف لعرض جميع التفاصيل.</p></div></div><div class="toolbar"><input id="searchName" class="input" placeholder="بحث بالاسم"><input id="searchNational" class="input" inputmode="numeric" placeholder="بحث بالرقم القومي"><input id="searchPhone" class="input" inputmode="numeric" placeholder="بحث برقم الهاتف"></div><div class="form-actions" style="margin-bottom:16px"><button id="inquiryPrev" class="btn ghost" disabled>السابق</button><span id="inquiryPageInfo" class="muted" style="align-self:center">صفحة 1</span><button id="inquiryNext" class="btn ghost">التالي</button></div><div class="table-wrap"><table class="table"><thead><tr><th>الترتيب</th><th>الاسم</th><th>الرقم القومي</th><th>اسم الأم</th><th>رقم الهاتف</th><th>تاريخ الإرسال</th><th>تاريخ الموافقة/الإلغاء</th><th>سبب الحالة</th><th>الدفع</th><th>المراجعة</th></tr></thead><tbody id="inquiryBody"></tbody></table></div><div id="inquiryEmpty" class="empty hidden">لا توجد نتائج.</div></div></section>
 
-      <section id="requestsPage" class="page hidden"><div class="panel glass"><div class="panel-head"><div><h2>الطلبات</h2><p class="muted">طلبات قيد المراجعة فقط.</p></div><button id="refreshRequests" class="btn ghost">تحديث</button></div><div id="requestsList" class="requests"></div><div class="form-actions" style="margin-top:16px"><button id="requestsPrev" class="btn ghost" disabled>السابق</button><span id="requestsPageInfo" class="muted" style="align-self:center">صفحة 1</span><button id="requestsNext" class="btn ghost">التالي</button></div><div id="requestsEmpty" class="empty hidden">لا توجد طلبات معلقة.</div></div></section>
+          <form
+            id="requestForm"
+            novalidate
+          >
+
+            <div class="grid">
+
+              <div class="field">
+
+                <label>
+                  الاسم رباعي *
+                </label>
+
+                <input
+                  id="fullName"
+                  class="input"
+                  maxlength="100"
+                >
+
+                <div
+                  class="error"
+                  data-e="fullName"
+                ></div>
+
+              </div>
+
+
+              <div class="field">
+
+                <label>
+                  اسم الأم *
+                </label>
+
+                <input
+                  id="motherName"
+                  class="input"
+                  maxlength="100"
+                >
+
+                <div
+                  class="error"
+                  data-e="motherName"
+                ></div>
+
+              </div>
+
+
+              <div class="field">
+
+                <label>
+                  الرقم القومي (14 رقم) *
+                </label>
+
+                <input
+                  id="nationalId"
+                  class="input"
+                  inputmode="numeric"
+                  maxlength="14"
+                >
+
+                <div
+                  class="error"
+                  data-e="nationalId"
+                ></div>
+
+              </div>
+
+
+              <div class="field">
+
+                <label>
+                  رقم المصنع *
+                </label>
+
+                <input
+                  id="factoryNumber"
+                  class="input"
+                  maxlength="40"
+                >
+
+                <div
+                  class="error"
+                  data-e="factoryNumber"
+                ></div>
+
+              </div>
+
+
+              <div class="field">
+
+                <label>
+                  رقم الهاتف (11 رقم) *
+                </label>
+
+                <input
+                  id="phone"
+                  class="input"
+                  inputmode="numeric"
+                  maxlength="11"
+                >
+
+                <div
+                  class="error"
+                  data-e="phone"
+                ></div>
+
+              </div>
+
+
+              <div class="money-row span-2">
+
+                <div class="field">
+
+                  <label>
+                    دفع كام *
+                  </label>
+
+                  <input
+                    id="paidAmount"
+                    class="input"
+                    inputmode="decimal"
+                  >
+
+                  <div
+                    class="error"
+                    data-e="paidAmount"
+                  ></div>
+
+                </div>
+
+
+                <div class="field">
+
+                  <label>
+                    المتبقي *
+                  </label>
+
+                  <input
+                    id="remainingAmount"
+                    class="input"
+                    inputmode="decimal"
+                  >
+
+                  <div
+                    class="error"
+                    data-e="remainingAmount"
+                  ></div>
+
+                </div>
+
+              </div>
+
+
+              <div class="field span-2">
+
+                <label>
+                  سبب الحالة *
+                </label>
+
+                <select
+                  id="caseType"
+                  class="select"
+                >
+
+                  <option value="">
+                    اختر سبب الحالة
+                  </option>
+
+                  <option value="بدل تالف أو فاقد">
+                    بدل تالف أو فاقد
+                  </option>
+
+                  <option value="فصل">
+                    فصل
+                  </option>
+
+                  <option value="ضم">
+                    ضم
+                  </option>
+
+                  <option value="نقل محافظة أخرى">
+                    نقل محافظة أخرى
+                  </option>
+
+                </select>
+
+                <div
+                  class="error"
+                  data-e="caseType"
+                ></div>
+
+              </div>
+
+
+              <div
+                id="dynamicFields"
+                class="span-2"
+              ></div>
+
+
+              <!-- IMAGES -->
+              <div class="field span-2 image-upload">
+
+                <label>
+                  صور من الهاتف (اختياري)
+                </label>
+
+                <div class="image-upload-row">
+
+                  <input
+                    id="requestImages"
+                    class="input"
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    multiple
+                  >
+
+                  <button
+                    id="removeAllImagesBtn"
+                    class="btn ghost"
+                    type="button"
+                  >
+                    حذف كل الصور
+                  </button>
+
+                </div>
+
+                <div
+                  id="imagePreviewGrid"
+                  class="image-preview-grid"
+                ></div>
+
+                <div class="image-note">
+                  يمكنك اختيار أكثر من صورة.
+                  لو أضفت صورة واحدة أو أكثر، يكفي الاسم + رقم الهاتف.
+                  لو بدون صور، لازم تكمل كل البيانات.
+                </div>
+
+              </div>
+
+
+              <div class="form-actions span-2">
+
+                <button
+                  id="submitRequestBtn"
+                  class="btn success"
+                  type="submit"
+                >
+                  إرسال الطلب
+                </button>
+
+                <button
+                  class="btn danger"
+                  type="button"
+                  id="cancelFormBtn"
+                >
+                  إلغاء
+                </button>
+
+              </div>
+
+            </div>
+
+          </form>
+
+        </div>
+
+      </section>
+
+
+      <!-- INQUIRY -->
+      <section
+        id="inquiryPage"
+        class="page hidden"
+      >
+
+        <div class="panel glass">
+
+          <div class="panel-head">
+
+            <div>
+
+              <h2>
+                الاستعلام
+              </h2>
+
+              <p class="muted">
+                اضغط على أي صف لعرض جميع التفاصيل.
+              </p>
+
+            </div>
+
+          </div>
+
+
+          <div class="toolbar">
+
+            <input
+              id="searchName"
+              class="input"
+              placeholder="بحث بالاسم"
+            >
+
+            <input
+              id="searchNational"
+              class="input"
+              inputmode="numeric"
+              placeholder="بحث بالرقم القومي"
+            >
+
+            <input
+              id="searchPhone"
+              class="input"
+              inputmode="numeric"
+              placeholder="بحث برقم الهاتف"
+            >
+
+          </div>
+
+
+          <div
+            class="form-actions"
+            style="margin-bottom:16px"
+          >
+
+            <button
+              id="inquiryPrev"
+              class="btn ghost"
+              disabled
+            >
+              السابق
+            </button>
+
+            <span
+              id="inquiryPageInfo"
+              class="muted"
+              style="align-self:center"
+            >
+              صفحة 1
+            </span>
+
+            <button
+              id="inquiryNext"
+              class="btn ghost"
+            >
+              التالي
+            </button>
+
+          </div>
+
+
+          <div class="table-wrap">
+
+            <table class="table">
+
+              <thead>
+
+                <tr>
+
+                  <th>الترتيب</th>
+                  <th>الاسم</th>
+                  <th>الرقم القومي</th>
+                  <th>اسم الأم</th>
+                  <th>رقم الهاتف</th>
+                  <th>تاريخ الإرسال</th>
+                  <th>تاريخ الموافقة/الإلغاء</th>
+                  <th>سبب الحالة</th>
+                  <th>الدفع</th>
+                  <th>المراجعة</th>
+
+                </tr>
+
+              </thead>
+
+              <tbody id="inquiryBody"></tbody>
+
+            </table>
+
+          </div>
+
+
+          <div
+            id="inquiryEmpty"
+            class="empty hidden"
+          >
+            لا توجد نتائج.
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- REQUESTS -->
+      <section
+        id="requestsPage"
+        class="page hidden"
+      >
+
+        <div class="panel glass">
+
+          <div class="panel-head">
+
+            <div>
+
+              <h2>
+                الطلبات
+              </h2>
+
+              <p class="muted">
+                طلبات قيد المراجعة فقط.
+              </p>
+
+            </div>
+
+            <button
+              id="refreshRequests"
+              class="btn ghost"
+            >
+              تحديث
+            </button>
+
+          </div>
+
+
+          <div
+            id="requestsList"
+            class="requests"
+          ></div>
+
+
+          <div
+            class="form-actions"
+            style="margin-top:16px"
+          >
+
+            <button
+              id="requestsPrev"
+              class="btn ghost"
+              disabled
+            >
+              السابق
+            </button>
+
+            <span
+              id="requestsPageInfo"
+              class="muted"
+              style="align-self:center"
+            >
+              صفحة 1
+            </span>
+
+            <button
+              id="requestsNext"
+              class="btn ghost"
+            >
+              التالي
+            </button>
+
+          </div>
+
+
+          <div
+            id="requestsEmpty"
+            class="empty hidden"
+          >
+            لا توجد طلبات معلقة.
+          </div>
+
+        </div>
+
+      </section>
+
     </main>
+
   </section>
+
 </div>
 
-<div id="modal" class="modal hidden"><div class="modal-card glass"><div class="panel-head"><h2 id="modalTitle">تفاصيل الطلب</h2><button id="closeModal" class="btn ghost">إغلاق</button></div><div id="modalContent"></div></div></div>
-<div id="toast" class="toast hidden"></div>
+
+<!-- MODAL -->
+<div
+  id="modal"
+  class="modal hidden"
+>
+
+  <div class="modal-card glass">
+
+    <div class="panel-head">
+
+      <h2 id="modalTitle">
+        تفاصيل الطلب
+      </h2>
+
+      <button
+        id="closeModal"
+        class="btn ghost"
+      >
+        إغلاق
+      </button>
+
+    </div>
+
+    <div id="modalContent"></div>
+
+  </div>
+
+</div>
+
+
+<div
+  id="toast"
+  class="toast hidden"
+></div>
+
 
 <script>
-  const SUPABASE_URL = 'https://nwgcvifsdveerllbmbgp.supabase.co';
-  const SUPABASE_ANON_KEY = 'sb_publishable_xGXiD-DTd3qknbjxQ4luDw_1yDkwSZC';
-  // ضع هنا VAPID PUBLIC KEY بعد توليده لإشعارات Web Push. لا تضع الـ PRIVATE KEY هنا أبدًا.
-  const VAPID_PUBLIC_KEY = 'PUT_YOUR_VAPID_PUBLIC_KEY_HERE';
-  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  let currentRole='guest', allRequests=[], editingId=null;
-  const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-  const arDate=v=>{if(!v)return'—';const d=new Date(v);if(Number.isNaN(d.getTime()))return'—';const date=d.toLocaleDateString('en-GB',{day:'2-digit',month:'2-digit',year:'numeric'});let h=d.getHours(),m=String(d.getMinutes()).padStart(2,'0'),ap=h>=12?'PM':'AM';h=h%12||12;return `${date} ${String(h).padStart(2,'0')}:${m} ${ap}`};
-  function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.remove('hidden');setTimeout(()=>t.classList.add('hidden'),2600)}
-  function isArabicName(v){return /^[\u0600-\u06FF\s]+$/.test(v.trim())}
-  function onlyDigits(id,max){$(id).addEventListener('input',e=>e.target.value=e.target.value.replace(/\D/g,'').slice(0,max))}
-  onlyDigits('#nationalId',14);onlyDigits('#phone',11);onlyDigits('#searchNational',14);onlyDigits('#searchPhone',11);
-  ['#paidAmount','#remainingAmount'].forEach(id=>$(id).addEventListener('input',e=>e.target.value=e.target.value.replace(/[^0-9.]/g,'')));
 
-  function switchPage(name){$$('.page').forEach(x=>x.classList.add('hidden'));$('#'+name+'Page').classList.remove('hidden');if(name==='inquiry')loadInquiry();if(name==='requests'){loadRequests();$('#requestNotifyDot').classList.add('hidden')}}
-  $$('[data-page]').forEach(b=>b.addEventListener('click',()=>switchPage(b.dataset.page)));
-  $('#showAdminBtn').onclick=()=>$('#adminLoginBox').classList.toggle('hidden');
-  $('#guestBtn').onclick=()=>enterApp('guest');
-  async function enterApp(role){currentRole=role;$('#loginView').classList.add('hidden');$('#appView').classList.remove('hidden');$('#roleLabel').textContent=role==='admin'?'Admin':'Guest';$('#requestsNav').classList.toggle('hidden',role!=='admin');$('#requestsCard').classList.toggle('hidden',role!=='admin');if(role==='admin'){loadPendingCount();startRequestRealtime();setupAdminPush()}switchPage('home')}
-  function urlBase64ToUint8Array(base64String){const padding='='.repeat((4-base64String.length%4)%4);const base64=(base64String+padding).replace(/-/g,'+').replace(/_/g,'/');const raw=atob(base64);return Uint8Array.from([...raw].map(c=>c.charCodeAt(0)))}
-  async function setupAdminPush(){
-    if(!('serviceWorker' in navigator)||!('PushManager' in window)||!('Notification' in window))return;
-    if(VAPID_PUBLIC_KEY.includes('PUT_YOUR_'))return;
-    try{
-      const permission=Notification.permission==='granted'? 'granted' : await Notification.requestPermission();
-      if(permission!=='granted')return;
-      const reg=await navigator.serviceWorker.ready;
-      let sub=await reg.pushManager.getSubscription();
-      if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(VAPID_PUBLIC_KEY)});
-      const {data:{user}}=await sb.auth.getUser();if(!user)return;
-      const {error}=await sb.from('admin_push_subscriptions').upsert({user_id:user.id,endpoint:sub.endpoint,subscription:sub.toJSON()},{onConflict:'endpoint'});
-      if(error)console.warn('Push subscription error',error);
-    }catch(e){console.warn('Push setup failed',e)}
-  }
-  $('#adminLoginBtn').onclick=async()=>{const username=$('#adminEmail').value.trim().toLowerCase(),password=$('#adminPassword').value;if(!username||!password)return toast('اكتب اسم المستخدم وكلمة المرور');if(!/^[a-z0-9._-]+$/.test(username))return toast('اسم المستخدم يجب أن يحتوي على حروف إنجليزية أو أرقام فقط');const email=username+'@gmail.com';const {data,error}=await sb.auth.signInWithPassword({email,password});if(error)return toast('بيانات الأدمن غير صحيحة');const {data:profile,error:pErr}=await sb.from('admin_profiles').select('user_id').eq('user_id',data.user.id).maybeSingle();if(pErr||!profile){await sb.auth.signOut();return toast('هذا الحساب ليس أدمن');}enterApp('admin');startRequestRealtime()};
-  $('#logoutBtn').onclick=async()=>{if(currentRole==='admin')await sb.auth.signOut();location.reload()};
+  /* =====================================================
+     SUPABASE
+  ===================================================== */
 
-  $('#caseType').onchange=renderDynamic;
-  function renderDynamic(){const type=$('#caseType').value,d=$('#dynamicFields');d.innerHTML='';if(type==='بدل تالف أو فاقد')d.innerHTML=`<div class="field"><label>المكتب التابع له *</label><input id="officeName" class="input" maxlength="120"></div>`;
-    if(type==='فصل')d.innerHTML=`<div class="field"><label>سبب الفصل *</label><select id="separationReason" class="select"><option value="">اختر</option><option>زواج</option><option>طلاق</option></select></div>`;
-    if(type==='ضم')d.innerHTML=`<div class="grid"><div class="field"><label>سبب الضم *</label><select id="mergeReason" class="select"><option value="">اختر</option><option value="زواج">زواج</option><option value="ابن/ابنة">ابن/ابنة</option></select></div><div class="field"><label>اسم الشخص المرتبط بالضم رباعي *</label><input id="relatedName" class="input" maxlength="100"></div><div class="field"><label>الرقم القومي للشخص المرتبط (14 رقم) *</label><input id="relatedNationalId" class="input" inputmode="numeric" maxlength="14"></div></div>`;
-    if(type==='نقل محافظة أخرى')d.innerHTML=`<div class="grid"><div class="field"><label>المحافظة الحالية *</label><input id="fromGovernorate" class="input" maxlength="80"></div><div class="field"><label>المحافظة المطلوب النقل إليها *</label><input id="toGovernorate" class="input" maxlength="80"></div></div>`;
-    const r=$('#relatedNationalId');if(r)r.addEventListener('input',e=>e.target.value=e.target.value.replace(/\D/g,'').slice(0,14));}
-  let selectedImageFiles=[], existingImageUrls=[], removedExistingImageUrls=[], submitting=false;
-  function hasImages(){return selectedImageFiles.length>0||existingImageUrls.length>0}
-  function formData(){
-    return {
-      full_name:$('#fullName').value.trim(), mother_name:$('#motherName').value.trim(),
-      national_id:$('#nationalId').value.trim(), factory_number:$('#factoryNumber').value.trim(),
-      phone:$('#phone').value.trim(), paid_amount:$('#paidAmount').value===''?null:Number($('#paidAmount').value),
-      remaining_amount:$('#remainingAmount').value===''?null:Number($('#remainingAmount').value), case_type:$('#caseType').value||null,
-      office_name:$('#officeName')?.value.trim()||null, separation_reason:$('#separationReason')?.value||null,
-      merge_reason:$('#mergeReason')?.value||null, related_name:$('#relatedName')?.value.trim()||null,
-      related_national_id:$('#relatedNationalId')?.value.trim()||null,
-      from_governorate:$('#fromGovernorate')?.value.trim()||null, to_governorate:$('#toGovernorate')?.value.trim()||null
-    };
-  }
-  function validate(v){
-    $$('.error').forEach(x=>x.textContent='');let ok=true;const withImages=hasImages();
-    const err=(k,m)=>{const e=document.querySelector(`[data-e="${k}"]`);if(e)e.textContent=m;ok=false};
-    if(!v.full_name||!isArabicName(v.full_name)||v.full_name.split(/\s+/).length<4)err('fullName','اكتب الاسم رباعي بحروف عربية فقط');
-    if(!/^\d{11}$/.test(v.phone))err('phone','رقم الهاتف لازم 11 رقم بالضبط');
-    if(withImages)return ok;
-    if(!v.mother_name||!isArabicName(v.mother_name))err('motherName','اسم الأم حروف عربية فقط');
-    if(!/^\d{14}$/.test(v.national_id))err('nationalId','الرقم القومي لازم 14 رقم بالضبط');
-    if(!/^[A-Za-z0-9\u0600-\u06FF\-\/]+$/.test(v.factory_number))err('factoryNumber','رقم المصنع مطلوب ويمكن أن يحتوي حروف وأرقام');
-    if(v.paid_amount===null||Number.isNaN(v.paid_amount)||v.paid_amount<0)err('paidAmount','اكتب قيمة صحيحة');
-    if(v.remaining_amount===null||Number.isNaN(v.remaining_amount)||v.remaining_amount<0)err('remainingAmount','اكتب قيمة صحيحة');
-    if(!v.case_type)err('caseType','اختر سبب الحالة');
-    if(v.case_type==='بدل تالف أو فاقد'&&!v.office_name)ok=false;
-    if(v.case_type==='فصل'&&!v.separation_reason)ok=false;
-    if(v.case_type==='ضم'&&(!v.merge_reason||!v.related_name||!isArabicName(v.related_name)||!/^\d{14}$/.test(v.related_national_id||'')))ok=false;
-    if(v.case_type==='نقل محافظة أخرى'&&(!v.from_governorate||!v.to_governorate))ok=false;
-    return ok;
-  }
-  function canonicalRequest(v){
-    return [v.full_name,v.mother_name,v.national_id,v.factory_number,v.phone,v.paid_amount,v.remaining_amount,v.case_type,v.office_name,v.separation_reason,v.merge_reason,v.related_name,v.related_national_id,v.from_governorate,v.to_governorate,existingImageUrls.join(',')].map(x=>String(x??'').trim()).join('|');
-  }
-  async function makeHash(v){const data=new TextEncoder().encode(canonicalRequest(v));const digest=await crypto.subtle.digest('SHA-256',data);return [...new Uint8Array(digest)].map(b=>b.toString(16).padStart(2,'0')).join('')}
-  function renderSelectedImages(){
-    const box=$('#imagePreviewGrid');box.innerHTML='';
-    existingImageUrls.forEach((url,i)=>{const el=document.createElement('div');el.className='image-thumb';el.innerHTML=`<img src="${esc(url)}" alt="صورة ${i+1}"><button type="button" title="حذف الصورة">×</button>`;el.querySelector('button').onclick=()=>{removedExistingImageUrls.push(url);existingImageUrls.splice(i,1);renderSelectedImages()};box.appendChild(el)});
-    selectedImageFiles.forEach((file,i)=>{const el=document.createElement('div');el.className='image-thumb';const img=document.createElement('img');img.alt=`صورة جديدة ${i+1}`;el.appendChild(img);const b=document.createElement('button');b.type='button';b.title='حذف الصورة';b.textContent='×';b.onclick=()=>{selectedImageFiles.splice(i,1);renderSelectedImages()};el.appendChild(b);box.appendChild(el);const reader=new FileReader();reader.onload=e=>img.src=e.target.result;reader.readAsDataURL(file)});
-  }
-  $('#requestImages').addEventListener('change',e=>{const files=[...e.target.files||[]];const valid=files.filter(f=>f.type.startsWith('image/')&&f.size<=8*1024*1024);if(valid.length<files.length)toast('تم تجاهل ملف غير صالح أو صورة أكبر من 8 ميجابايت');selectedImageFiles.push(...valid);e.target.value='';renderSelectedImages()});
-  $('#removeAllImagesBtn').onclick=()=>{removedExistingImageUrls.push(...existingImageUrls);existingImageUrls=[];selectedImageFiles=[];renderSelectedImages();toast('تم حذف كل الصور من الطلب')};
-  async function uploadImage(file){
-    if(!file)return null;if(file.size>8*1024*1024)throw new Error('حجم الصورة أكبر من 8 ميجابايت');if(!file.type.startsWith('image/'))throw new Error('الملف لازم يكون صورة');
-    const ext=(file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg';const path=`requests/${crypto.randomUUID()}.${ext}`;
-    const {error}=await sb.storage.from('request-images').upload(path,file,{contentType:file.type,upsert:false});if(error)throw new Error('تعذر رفع الصورة: '+error.message);
-    const {data}=sb.storage.from('request-images').getPublicUrl(path);return data.publicUrl;
-  }
-  async function removeStorageUrls(urls){
-    const marker='/storage/v1/object/public/request-images/';const paths=urls.map(u=>{const i=String(u||'').indexOf(marker);return i>=0?decodeURIComponent(String(u).slice(i+marker.length)):null}).filter(Boolean);if(paths.length)await sb.storage.from('request-images').remove(paths);
-  }
-  $('#requestForm').onsubmit=async e=>{
-    e.preventDefault();if(submitting)return;const v=formData();if(!validate(v))return toast(hasImages()?'اكتب الاسم ورقم الهاتف بشكل صحيح':'راجع البيانات المطلوبة');
-    submitting=true;const btn=$('#submitRequestBtn');btn.disabled=true;btn.textContent='جاري الإرسال...';let uploaded=[];
-    try{
-      for(const file of selectedImageFiles){const url=await uploadImage(file);if(url)uploaded.push(url)}
-      const finalImages=[...existingImageUrls,...uploaded];const hash=await makeHash({...v});
-      const duplicateQ=sb.from('requests').select('id,status').eq('request_hash',hash);if(editingId)duplicateQ.neq('id',editingId);const {data:dupe,error:dupeErr}=await duplicateQ.limit(1).maybeSingle();
-      if(dupeErr&&dupeErr.code!=='PGRST116')throw dupeErr;if(dupe){await removeStorageUrls(uploaded);return toast('هذا الطلب موجود بالفعل، لن يتم تكراره.')}
-      const payload={...v,image_urls:finalImages,status:'pending',reviewed_at:null,reviewed_by:null,rejection_reason:null,request_hash:hash};
-      let res;if(editingId){payload.resubmitted_at=new Date().toISOString();res=await sb.from('requests').update(payload).eq('id',editingId)}else res=await sb.from('requests').insert(payload);
-      if(res.error){await removeStorageUrls(uploaded);if(res.error.code==='23505')return toast('الطلب موجود بالفعل، تم منع التكرار.');return toast('تعذر حفظ الطلب: '+res.error.message)}
-      if(editingId&&removedExistingImageUrls.length)await removeStorageUrls(removedExistingImageUrls);toast(editingId?'تم إرسال التعديل للأدمن':'تم إرسال الطلب للأدمن');resetForm();switchPage('inquiry');
-    }catch(err){await removeStorageUrls(uploaded).catch(()=>{});toast(err?.message||'حدث خطأ أثناء إرسال الطلب')}
-    finally{submitting=false;btn.disabled=false;btn.textContent='إرسال الطلب'}
+  const SUPABASE_URL =
+    'https://nwgcvifsdveerllbmbgp.supabase.co';
+
+  const SUPABASE_ANON_KEY =
+    'sb_publishable_xGXiD-DTd3qknbjxQ4luDw_1yDkwSZC';
+
+  const sb =
+    supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_ANON_KEY
+    );
+
+
+  /* =====================================================
+     GLOBALS
+  ===================================================== */
+
+  let currentRole = 'guest';
+
+  let allRequests = [];
+
+  let editingId = null;
+
+  let selectedImageFiles = [];
+
+  let existingImageUrls = [];
+
+  let removedExistingImageUrls = [];
+
+  let submitting = false;
+
+  let requestChannel = null;
+
+  let lastRealtimeNotice = 0;
+
+
+  const $ = s =>
+    document.querySelector(s);
+
+  const $$ = s =>
+    [...document.querySelectorAll(s)];
+
+
+  /* =====================================================
+     DATE + TIME
+  ===================================================== */
+
+  const arDate = v => {
+
+    if(!v) return '—';
+
+    const d = new Date(v);
+
+    if(Number.isNaN(d.getTime()))
+      return '—';
+
+    const date =
+      d.toLocaleDateString(
+        'en-GB',
+        {
+          day:'2-digit',
+          month:'2-digit',
+          year:'numeric'
+        }
+      );
+
+    let h = d.getHours();
+
+    const m =
+      String(d.getMinutes()).padStart(2,'0');
+
+    const ap =
+      h >= 12 ? 'PM' : 'AM';
+
+    h = h % 12 || 12;
+
+    return `${date} ${String(h).padStart(2,'0')}:${m} ${ap}`;
   };
-  function resetForm(){editingId=null;selectedImageFiles=[];existingImageUrls=[];removedExistingImageUrls=[];$('#requestForm').reset();$('#dynamicFields').innerHTML='';$('#imagePreviewGrid').innerHTML='';$$('.error').forEach(x=>x.textContent='')}
-  $('#cancelFormBtn').onclick=()=>{resetForm();switchPage('home')};
 
-  const PAGE_SIZE=50;
-  let inquiryPage=0,inquiryTotal=0,inquiryTimer=null;
-  let requestsPage=0,requestsTotal=0;
-  async function loadInquiry(resetPage=true){if(resetPage)inquiryPage=0;const n=$('#searchName').value.trim();const nid=$('#searchNational').value.trim();const ph=$('#searchPhone').value.trim();let q=sb.from('requests_public').select('*',{count:'exact'}).order('serial_no',{ascending:true}).range(inquiryPage*PAGE_SIZE,(inquiryPage+1)*PAGE_SIZE-1);if(n)q=q.ilike('full_name',`%${n}%`);if(nid)q=q.ilike('national_id',`%${nid}%`);if(ph)q=q.ilike('phone',`%${ph}%`);const {data,error,count}=await q;if(error){$('#inquiryBody').innerHTML='';$('#inquiryEmpty').classList.remove('hidden');return toast('تعذر تحميل الاستعلام');}allRequests=data||[];inquiryTotal=count||0;renderInquiry();updateInquiryPager()}
-  function updateInquiryPager(){const pages=Math.max(1,Math.ceil(inquiryTotal/PAGE_SIZE));$('#inquiryPageInfo').textContent=`صفحة ${inquiryPage+1} من ${pages}`;$('#inquiryPrev').disabled=inquiryPage===0;$('#inquiryNext').disabled=inquiryPage>=pages-1||inquiryTotal===0;}
-  function statusBadge(s){return s==='done'?'<span class="badge done">تم</span>':s==='rejected'?'<span class="badge rejected">ملغي</span>':'<span class="badge pending">قيد المراجعة</span>'}
-  function renderInquiry(){const rows=allRequests;$('#inquiryEmpty').classList.toggle('hidden',rows.length>0);$('#inquiryBody').innerHTML=rows.map(x=>`<tr class="clickable" data-id="${x.id}"><td>#${x.serial_no}</td><td>${esc(x.full_name)}</td><td>${esc(x.national_id)}</td><td>${esc(x.mother_name)}</td><td>${esc(x.phone)}</td><td>${arDate(x.created_at)}</td><td>${arDate(x.reviewed_at)}</td><td>${esc(x.case_type)}</td><td>${Number(x.paid_amount).toLocaleString('ar-EG')}</td><td>${statusBadge(x.status)}</td></tr>`).join('');$$('#inquiryBody tr').forEach(r=>r.onclick=()=>openDetails(r.dataset.id));}
-  ['#searchName','#searchNational','#searchPhone'].forEach(id=>$(id).addEventListener('input',()=>{clearTimeout(inquiryTimer);inquiryTimer=setTimeout(()=>loadInquiry(true),250)}));
-  $('#inquiryPrev').onclick=()=>{if(inquiryPage>0){inquiryPage--;loadInquiry(false)}};
-  $('#inquiryNext').onclick=()=>{const pages=Math.ceil(inquiryTotal/PAGE_SIZE);if(inquiryPage<pages-1){inquiryPage++;loadInquiry(false)}};
-  const esc=s=>String(s??'—').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 
-  function requestKV(label,value){const raw=String(value??'').trim();const shown=raw||'—';return `<div class="kv"><small>${esc(label)}</small><div class="kv-value">${esc(shown)}</div>${raw?`<button type="button" class="kv-copy" data-copy="${encodeURIComponent(raw)}" title="نسخ" aria-label="نسخ ${esc(label)}">⧉</button>`:''}</div>`}
-  async function loadPendingCount(){if(currentRole!=='admin')return;const {count,error}=await sb.from('requests').select('id',{count:'exact',head:true}).eq('status','pending');if(error)return;setPendingCount(count||0)}
-  function setPendingCount(count){const n=Number(count)||0;['#requestsCount','#requestsCardCount'].forEach(sel=>{const el=$(sel);if(!el)return;el.textContent=n;el.classList.toggle('zero',n===0)});}
-    async function loadRequests(resetPage=true){
-      if(currentRole!=='admin')return switchPage('home');if(resetPage)requestsPage=0;
-      const {data,error,count}=await sb.from('requests').select('*',{count:'exact'}).eq('status','pending').order('created_at',{ascending:true}).range(requestsPage*PAGE_SIZE,(requestsPage+1)*PAGE_SIZE-1);
-      if(error)return toast('تعذر تحميل الطلبات');const list=data||[];requestsTotal=count||0;setPendingCount(requestsTotal);
-      $('#requestsEmpty').classList.toggle('hidden',requestsTotal>0);$('#requestsPageInfo').textContent=`صفحة ${requestsPage+1} من ${Math.max(1,Math.ceil(requestsTotal/PAGE_SIZE))}`;$('#requestsPrev').disabled=requestsPage===0;$('#requestsNext').disabled=requestsPage>=Math.max(1,Math.ceil(requestsTotal/PAGE_SIZE))-1||requestsTotal===0;
-      $('#requestsList').innerHTML=list.map(x=>`<article class="request-card"><div class="request-top"><div><h3>${esc(x.full_name)} <span class="badge pending">#${x.serial_no||'—'}</span></h3><div class="muted">أُرسل ${arDate(x.created_at)}</div></div><div class="form-actions"><button class="btn success" onclick="approveRequest('${x.id}')">تم</button><button class="btn danger" onclick="rejectRequest('${x.id}')">إلغاء مع السبب</button><button class="btn ghost" onclick="openAdminDetails('${x.id}')">كل البيانات</button></div></div><div class="request-grid">${requestKV('الاسم رباعي',x.full_name)}${requestKV('اسم الأم',x.mother_name)}${requestKV('الرقم القومي',x.national_id)}${requestKV('رقم المصنع',x.factory_number)}${requestKV('رقم الهاتف',x.phone)}${requestKV('دفع كام',x.paid_amount===null?'':Number(x.paid_amount).toLocaleString('ar-EG'))}${requestKV('المتبقي',x.remaining_amount===null?'':Number(x.remaining_amount).toLocaleString('ar-EG'))}${requestKV('سبب الحالة',x.case_type)}${requestKV('تاريخ الإرسال',arDate(x.created_at))}${requestKV('عدد الصور',Array.isArray(x.image_urls)?x.image_urls.length:0)}</div>${renderAdminImages(x)}</article>`).join('');
+  /* =====================================================
+     TOAST
+  ===================================================== */
+
+  function toast(msg){
+
+    const t = $('#toast');
+
+    t.textContent = msg;
+
+    t.classList.remove('hidden');
+
+    clearTimeout(t._timer);
+
+    t._timer =
+      setTimeout(
+        () => t.classList.add('hidden'),
+        3000
+      );
+  }
+
+
+  /* =====================================================
+     VALIDATION HELPERS
+  ===================================================== */
+
+  function isArabicName(v){
+
+    return /^[\u0600-\u06FF\s]+$/.test(
+      String(v || '').trim()
+    );
+
+  }
+
+
+  function onlyDigits(id,max){
+
+    const el = $(id);
+
+    if(!el) return;
+
+    el.addEventListener(
+      'input',
+      e => {
+
+        e.target.value =
+          e.target.value
+            .replace(/\D/g,'')
+            .slice(0,max);
+
+      }
+    );
+
+  }
+
+
+  onlyDigits('#nationalId',14);
+
+  onlyDigits('#phone',11);
+
+  onlyDigits('#searchNational',14);
+
+  onlyDigits('#searchPhone',11);
+
+
+  ['#paidAmount','#remainingAmount']
+    .forEach(id => {
+
+      const el = $(id);
+
+      if(!el) return;
+
+      el.addEventListener(
+        'input',
+        e => {
+
+          e.target.value =
+            e.target.value
+              .replace(/[^0-9.]/g,'');
+
+        }
+      );
+
+    });
+
+
+  /* =====================================================
+     PAGE SWITCH
+  ===================================================== */
+
+  function switchPage(name){
+
+    $$('.page')
+      .forEach(
+        x => x.classList.add('hidden')
+      );
+
+    const page =
+      $('#' + name + 'Page');
+
+    if(page)
+      page.classList.remove('hidden');
+
+
+    if(name === 'inquiry')
+      loadInquiry();
+
+
+    if(name === 'requests'){
+
+      loadRequests();
+
+      $('#requestNotifyDot')
+        .classList.add('hidden');
+
     }
-    function renderAdminImages(x){const urls=Array.isArray(x.image_urls)?x.image_urls:[];if(!urls.length)return '';return `<div class="field" style="margin-top:14px"><label>صور الطلب</label><div class="details-photo-grid">${urls.map((u,i)=>`<div class="details-photo-card"><img src="${esc(u)}" alt="صورة ${i+1}"><div class="details-photo-actions"><button class="btn ghost" type="button" onclick="downloadImage('${encodeURIComponent(u)}','${x.serial_no||'request'}-${i+1}')">حفظ</button></div></div>`).join('')}</div><button class="btn primary" type="button" onclick="downloadAllImages('${x.id}')">⬇ حفظ كل الصور</button></div>`}
-    $('#requestsPrev').onclick=()=>{if(requestsPage>0){requestsPage--;loadRequests(false)}};
-    $('#requestsNext').onclick=()=>{const pages=Math.ceil(requestsTotal/PAGE_SIZE);if(requestsPage<pages-1){requestsPage++;loadRequests(false)}};
-  $('#requestsList').addEventListener('click',async e=>{const btn=e.target.closest('.kv-copy');if(!btn)return;e.stopPropagation();const value=decodeURIComponent(btn.dataset.copy||'');try{await navigator.clipboard.writeText(value);btn.classList.add('copied');btn.textContent='✓';toast('تم نسخ البيانات');setTimeout(()=>{btn.classList.remove('copied');btn.textContent='⧉'},900)}catch(err){const ta=document.createElement('textarea');ta.value=value;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();btn.classList.add('copied');btn.textContent='✓';toast('تم نسخ البيانات');setTimeout(()=>{btn.classList.remove('copied');btn.textContent='⧉'},900);}});
-  $('#refreshRequests').onclick=loadRequests;
-  window.approveRequest=async id=>{const {error}=await sb.rpc('admin_review_request',{p_request_id:id,p_action:'done',p_reason:null});if(error)return toast(error.message);toast('تم اعتماد الطلب');loadRequests();loadPendingCount()};
-  window.rejectRequest=async id=>{showModal('إلغاء الطلب',`<div class="field"><label>سبب الإلغاء *</label><textarea id="rejectReason" class="textarea" placeholder="اكتب السبب بوضوح"></textarea></div><div class="form-actions" style="margin-top:14px"><button class="btn danger" id="sendReject">إرسال الإلغاء</button><button class="btn ghost" id="cancelReject">رجوع</button></div>`);$('#cancelReject').onclick=closeModal;$('#sendReject').onclick=async()=>{const reason=$('#rejectReason').value.trim();if(!reason)return toast('اكتب سبب الإلغاء');const {error}=await sb.rpc('admin_review_request',{p_request_id:id,p_action:'rejected',p_reason:reason});if(error)return toast(error.message);closeModal();toast('تم إلغاء الطلب وتسجيل السبب');loadRequests();loadPendingCount()}};
-  window.openAdminDetails=async id=>{const {data,error}=await sb.from('requests').select('*').eq('id',id).single();if(error)return toast('تعذر تحميل البيانات');renderDetails(data,false)};
-  function openDetails(id){const x=allRequests.find(r=>String(r.id)===String(id));if(x)renderDetails(x,true)}
-  function showModal(title,html){$('#modalTitle').textContent=title;$('#modalContent').innerHTML=html;$('#modal').classList.remove('hidden')}
-  function closeModal(){$('#modal').classList.add('hidden')};$('#closeModal').onclick=closeModal;$('#modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal()});
-  function renderDetails(x,publicView){
-    const fields=[['الترتيب','#'+x.serial_no],['الاسم',x.full_name],['اسم الأم',x.mother_name],['الرقم القومي',x.national_id],['رقم المصنع',x.factory_number],['الهاتف',x.phone],['دفع كام',x.paid_amount],['المتبقي',x.remaining_amount],['سبب الحالة',x.case_type],['المكتب',x.office_name],['سبب الفصل',x.separation_reason],['سبب الضم',x.merge_reason],['الاسم المرتبط بالضم',x.related_name],['الرقم القومي المرتبط',x.related_national_id],['المحافظة الحالية',x.from_governorate],['المحافظة الجديدة',x.to_governorate],['تاريخ الإرسال',arDate(x.created_at)],['تاريخ الموافقة/الإلغاء',arDate(x.reviewed_at)],['المراجعة',x.status==='done'?'تم':x.status==='rejected'?'ملغي':'قيد المراجعة']];
-    const reason=x.rejection_reason?`<div class="field" style="margin-top:16px"><label>سبب الإلغاء من الأدمن</label><textarea class="textarea" readonly>${esc(x.rejection_reason)}</textarea></div>`:'';
-    const urls=Array.isArray(x.image_urls)?x.image_urls:[];
-    const photos=urls.length?`<div class="field" style="margin-bottom:18px"><div class="panel-head" style="margin-bottom:10px"><label>الصور (${urls.length})</label>${currentRole==='admin'?`<button class="btn primary" type="button" id="downloadAllModalBtn">⬇ حفظ كل الصور</button>`:''}</div><div class="details-photo-grid">${urls.map((u,i)=>`<div class="details-photo-card"><img src="${esc(u)}" alt="صورة ${i+1}"><div class="details-photo-actions"><button class="btn ghost" type="button" onclick="downloadImage('${encodeURIComponent(u)}','${x.serial_no||'request'}-${i+1}')">حفظ</button></div></div>`).join('')}</div></div>`:'';
-    const edit=publicView?`<div class="form-actions" style="margin-top:16px"><button class="btn primary" id="editReqBtn">تعديل وإعادة إرسال</button>${currentRole==='admin'?`<button class="btn danger" id="deleteReqBtn">حذف البيانات</button>`:''}<button class="btn ghost" id="exitDetails">إلغاء</button></div>`:`<div class="form-actions" style="margin-top:16px"><button class="btn danger" id="deleteReqBtn">حذف البيانات</button><button class="btn ghost" id="exitDetails">إغلاق</button></div>`;
-    showModal('تفاصيل الطلب',`${photos}<div class="details-grid">${fields.filter(f=>f[1]!==null&&f[1]!==undefined&&f[1]!=='').map(f=>`<div class="kv"><small>${f[0]}</small><div class="kv-value">${esc(f[1])}</div></div>`).join('')}</div>${reason}${edit}`);
-    $('#exitDetails').onclick=closeModal;$('#deleteReqBtn').onclick=()=>deleteRequest(x);if($('#downloadAllModalBtn'))$('#downloadAllModalBtn').onclick=()=>downloadAllImages(x.id);if(publicView&&$('#editReqBtn'))$('#editReqBtn').onclick=()=>startEdit(x);
-  }
-  async function downloadImage(encoded,name){try{const url=decodeURIComponent(encoded);const r=await fetch(url);if(!r.ok)throw new Error();const blob=await r.blob();const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`${name}.jpg`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}catch(e){window.open(decodeURIComponent(encoded),'_blank');toast('فتح الصورة للحفظ اليدوي')}
-  }
-  async function downloadAllImages(id){const {data,error}=await sb.from('requests').select('serial_no,image_urls').eq('id',id).single();if(error)return toast('تعذر تحميل الصور');const urls=Array.isArray(data.image_urls)?data.image_urls:[];if(!urls.length)return toast('لا توجد صور');for(let i=0;i<urls.length;i++)await downloadImage(encodeURIComponent(urls[i]),`${data.serial_no||'request'}-${i+1}`);toast('تم تجهيز الصور للحفظ')}
-  async function deleteRequest(x){
-    if(currentRole!=='admin')return toast('الحذف متاح للأدمن فقط');if(!confirm(`هل أنت متأكد من حذف بيانات ${x.full_name} نهائيًا؟`))return;
-    const {error}=await sb.from('requests').delete().eq('id',x.id);if(error)return toast('تعذر حذف البيانات: '+error.message);
-    try{await removeStorageUrls(Array.isArray(x.image_urls)?x.image_urls:[])}catch(_){ }closeModal();toast('تم حذف بيانات الشخص نهائيًا');loadInquiry(true);loadPendingCount();if(!$('#requestsPage').classList.contains('hidden'))loadRequests(true);
-  }
-  function startEdit(x){editingId=x.id;selectedImageFiles=[];existingImageUrls=Array.isArray(x.image_urls)?[...x.image_urls]:(x.image_url?[x.image_url]:[]);removedExistingImageUrls=[];closeModal();switchPage('add');$('#fullName').value=x.full_name||'';$('#motherName').value=x.mother_name||'';$('#nationalId').value=x.national_id||'';$('#factoryNumber').value=x.factory_number||'';$('#phone').value=x.phone||'';$('#paidAmount').value=x.paid_amount??'';$('#remainingAmount').value=x.remaining_amount??'';$('#caseType').value=x.case_type||'';renderDynamic();if($('#officeName'))$('#officeName').value=x.office_name||'';if($('#separationReason'))$('#separationReason').value=x.separation_reason||'';if($('#mergeReason'))$('#mergeReason').value=x.merge_reason||'';if($('#relatedName'))$('#relatedName').value=x.related_name||'';if($('#relatedNationalId'))$('#relatedNationalId').value=x.related_national_id||'';if($('#fromGovernorate'))$('#fromGovernorate').value=x.from_governorate||'';if($('#toGovernorate'))$('#toGovernorate').value=x.to_governorate||'';renderSelectedImages();window.scrollTo({top:0,behavior:'smooth'})}
 
-  let requestChannel=null,lastRealtimeNotice=0;
-  async function notifyAdminNewRequest(row){
-    if(currentRole!=='admin')return;
-    $('#requestNotifyDot').classList.remove('hidden');
-    toast(`🔔 طلب جديد من ${row?.full_name||'مستخدم'}${row?.phone?' — '+row.phone:''}`);
-    if('Notification' in window){try{if(Notification.permission==='default')await Notification.requestPermission();if(Notification.permission==='granted')new Notification('طلب جديد',{body:`${row?.full_name||'مستخدم'} أرسل طلبًا جديدًا`});}catch(_){}}
   }
+
+
+  $$('[data-page]')
+    .forEach(
+      b =>
+        b.addEventListener(
+          'click',
+          () => switchPage(b.dataset.page)
+        )
+    );
+
+
+  /* =====================================================
+     LOGIN
+  ===================================================== */
+
+  $('#showAdminBtn').onclick =
+    () =>
+      $('#adminLoginBox')
+        .classList.toggle('hidden');
+
+
+  $('#guestBtn').onclick =
+    () =>
+      enterApp('guest');
+
+
+  async function enterApp(role){
+
+    currentRole = role;
+
+    $('#loginView')
+      .classList.add('hidden');
+
+    $('#appView')
+      .classList.remove('hidden');
+
+    $('#roleLabel').textContent =
+      role === 'admin'
+        ? 'Admin'
+        : 'Guest';
+
+
+    $('#requestsNav')
+      .classList.toggle(
+        'hidden',
+        role !== 'admin'
+      );
+
+
+    $('#requestsCard')
+      .classList.toggle(
+        'hidden',
+        role !== 'admin'
+      );
+
+
+    if(role === 'admin'){
+
+      await loadPendingCount();
+
+      startRequestRealtime();
+
+    }
+
+
+    switchPage('home');
+
+  }
+
+
+  $('#adminLoginBtn').onclick =
+    async () => {
+
+      const username =
+        $('#adminEmail')
+          .value
+          .trim()
+          .toLowerCase();
+
+      const password =
+        $('#adminPassword').value;
+
+
+      if(!username || !password)
+        return toast(
+          'اكتب اسم المستخدم وكلمة المرور'
+        );
+
+
+      if(!/^[a-z0-9._-]+$/.test(username))
+        return toast(
+          'اسم المستخدم يجب أن يحتوي على حروف إنجليزية أو أرقام فقط'
+        );
+
+
+      const email =
+        username + '@gmail.com';
+
+
+      const {
+        data,
+        error
+      } =
+        await sb.auth.signInWithPassword({
+          email,
+          password
+        });
+
+
+      if(error)
+        return toast(
+          'بيانات الأدمن غير صحيحة'
+        );
+
+
+      const {
+        data: profile,
+        error: pErr
+      } =
+        await sb
+          .from('admin_profiles')
+          .select('user_id')
+          .eq('user_id',data.user.id)
+          .maybeSingle();
+
+
+      if(pErr || !profile){
+
+        await sb.auth.signOut();
+
+        return toast(
+          'هذا الحساب ليس أدمن'
+        );
+
+      }
+
+
+      await enterApp('admin');
+
+    };
+
+
+  $('#logoutBtn').onclick =
+    async () => {
+
+      if(currentRole === 'admin')
+        await sb.auth.signOut();
+
+      location.reload();
+
+    };
+
+
+  /* =====================================================
+     DYNAMIC FIELDS
+  ===================================================== */
+
+  $('#caseType').onchange =
+    renderDynamic;
+
+
+  function renderDynamic(){
+
+    const type =
+      $('#caseType').value;
+
+    const d =
+      $('#dynamicFields');
+
+    d.innerHTML = '';
+
+
+    if(type === 'بدل تالف أو فاقد'){
+
+      d.innerHTML = `
+        <div class="field">
+          <label>المكتب التابع له *</label>
+          <input
+            id="officeName"
+            class="input"
+            maxlength="120"
+          >
+        </div>
+      `;
+
+    }
+
+
+    if(type === 'فصل'){
+
+      d.innerHTML = `
+        <div class="field">
+          <label>سبب الفصل *</label>
+
+          <select
+            id="separationReason"
+            class="select"
+          >
+            <option value="">اختر</option>
+            <option>زواج</option>
+            <option>طلاق</option>
+          </select>
+        </div>
+      `;
+
+    }
+
+
+    if(type === 'ضم'){
+
+      d.innerHTML = `
+        <div class="grid">
+
+          <div class="field">
+
+            <label>سبب الضم *</label>
+
+            <select
+              id="mergeReason"
+              class="select"
+            >
+              <option value="">اختر</option>
+              <option value="زواج">زواج</option>
+              <option value="ابن/ابنة">ابن/ابنة</option>
+            </select>
+
+          </div>
+
+
+          <div class="field">
+
+            <label>
+              اسم الشخص المرتبط بالضم رباعي *
+            </label>
+
+            <input
+              id="relatedName"
+              class="input"
+              maxlength="100"
+            >
+
+          </div>
+
+
+          <div class="field">
+
+            <label>
+              الرقم القومي للشخص المرتبط (14 رقم) *
+            </label>
+
+            <input
+              id="relatedNationalId"
+              class="input"
+              inputmode="numeric"
+              maxlength="14"
+            >
+
+          </div>
+
+        </div>
+      `;
+
+    }
+
+
+    if(type === 'نقل محافظة أخرى'){
+
+      d.innerHTML = `
+        <div class="grid">
+
+          <div class="field">
+
+            <label>
+              المحافظة الحالية *
+            </label>
+
+            <input
+              id="fromGovernorate"
+              class="input"
+              maxlength="80"
+            >
+
+          </div>
+
+
+          <div class="field">
+
+            <label>
+              المحافظة المطلوب النقل إليها *
+            </label>
+
+            <input
+              id="toGovernorate"
+              class="input"
+              maxlength="80"
+            >
+
+          </div>
+
+        </div>
+      `;
+
+    }
+
+
+    const r =
+      $('#relatedNationalId');
+
+    if(r){
+
+      r.addEventListener(
+        'input',
+        e => {
+
+          e.target.value =
+            e.target.value
+              .replace(/\D/g,'')
+              .slice(0,14);
+
+        }
+      );
+
+    }
+
+  }
+
+
+  /* =====================================================
+     IMAGES
+  ===================================================== */
+
+  function hasImages(){
+
+    return (
+      selectedImageFiles.length > 0 ||
+      existingImageUrls.length > 0
+    );
+
+  }
+
+
+  function formData(){
+
+    return {
+
+      full_name:
+        $('#fullName').value.trim(),
+
+      mother_name:
+        $('#motherName').value.trim(),
+
+      national_id:
+        $('#nationalId').value.trim(),
+
+      factory_number:
+        $('#factoryNumber').value.trim(),
+
+      phone:
+        $('#phone').value.trim(),
+
+      paid_amount:
+        $('#paidAmount').value === ''
+          ? null
+          : Number($('#paidAmount').value),
+
+      remaining_amount:
+        $('#remainingAmount').value === ''
+          ? null
+          : Number($('#remainingAmount').value),
+
+      case_type:
+        $('#caseType').value || null,
+
+      office_name:
+        $('#officeName')?.value.trim() || null,
+
+      separation_reason:
+        $('#separationReason')?.value || null,
+
+      merge_reason:
+        $('#mergeReason')?.value || null,
+
+      related_name:
+        $('#relatedName')?.value.trim() || null,
+
+      related_national_id:
+        $('#relatedNationalId')?.value.trim() || null,
+
+      from_governorate:
+        $('#fromGovernorate')?.value.trim() || null,
+
+      to_governorate:
+        $('#toGovernorate')?.value.trim() || null
+
+    };
+
+  }
+
+
+  function validate(v){
+
+    $$('.error')
+      .forEach(
+        x => x.textContent = ''
+      );
+
+
+    let ok = true;
+
+    const withImages =
+      hasImages();
+
+
+    const err = (key,message) => {
+
+      const e =
+        document.querySelector(
+          `[data-e="${key}"]`
+        );
+
+      if(e)
+        e.textContent = message;
+
+      ok = false;
+
+    };
+
+
+    if(
+      !v.full_name ||
+      !isArabicName(v.full_name) ||
+      v.full_name.split(/\s+/).length < 4
+    ){
+
+      err(
+        'fullName',
+        'اكتب الاسم رباعي بحروف عربية فقط'
+      );
+
+    }
+
+
+    if(!/^\d{11}$/.test(v.phone)){
+
+      err(
+        'phone',
+        'رقم الهاتف لازم 11 رقم بالضبط'
+      );
+
+    }
+
+
+    /*
+      لو فيه صور:
+      الاسم + الهاتف فقط
+    */
+
+    if(withImages)
+      return ok;
+
+
+    if(
+      !v.mother_name ||
+      !isArabicName(v.mother_name)
+    ){
+
+      err(
+        'motherName',
+        'اسم الأم حروف عربية فقط'
+      );
+
+    }
+
+
+    if(!/^\d{14}$/.test(v.national_id)){
+
+      err(
+        'nationalId',
+        'الرقم القومي لازم 14 رقم بالضبط'
+      );
+
+    }
+
+
+    if(
+      !/^[A-Za-z0-9\u0600-\u06FF\-\/]+$/
+        .test(v.factory_number)
+    ){
+
+      err(
+        'factoryNumber',
+        'رقم المصنع مطلوب ويمكن أن يحتوي حروف وأرقام'
+      );
+
+    }
+
+
+    if(
+      v.paid_amount === null ||
+      Number.isNaN(v.paid_amount) ||
+      v.paid_amount < 0
+    ){
+
+      err(
+        'paidAmount',
+        'اكتب قيمة صحيحة'
+      );
+
+    }
+
+
+    if(
+      v.remaining_amount === null ||
+      Number.isNaN(v.remaining_amount) ||
+      v.remaining_amount < 0
+    ){
+
+      err(
+        'remainingAmount',
+        'اكتب قيمة صحيحة'
+      );
+
+    }
+
+
+    if(!v.case_type){
+
+      err(
+        'caseType',
+        'اختر سبب الحالة'
+      );
+
+    }
+
+
+    if(
+      v.case_type === 'بدل تالف أو فاقد' &&
+      !v.office_name
+    ){
+
+      ok = false;
+
+    }
+
+
+    if(
+      v.case_type === 'فصل' &&
+      !v.separation_reason
+    ){
+
+      ok = false;
+
+    }
+
+
+    if(
+      v.case_type === 'ضم' &&
+      (
+        !v.merge_reason ||
+        !v.related_name ||
+        !isArabicName(v.related_name) ||
+        !/^\d{14}$/.test(
+          v.related_national_id || ''
+        )
+      )
+    ){
+
+      ok = false;
+
+    }
+
+
+    if(
+      v.case_type === 'نقل محافظة أخرى' &&
+      (
+        !v.from_governorate ||
+        !v.to_governorate
+      )
+    ){
+
+      ok = false;
+
+    }
+
+
+    return ok;
+
+  }
+
+
+  /* =====================================================
+     DUPLICATE HASH
+  ===================================================== */
+
+  function canonicalRequest(
+    v,
+    imageUrls = []
+  ){
+
+    return [
+
+      v.full_name,
+      v.mother_name,
+      v.national_id,
+      v.factory_number,
+      v.phone,
+      v.paid_amount,
+      v.remaining_amount,
+      v.case_type,
+      v.office_name,
+      v.separation_reason,
+      v.merge_reason,
+      v.related_name,
+      v.related_national_id,
+      v.from_governorate,
+      v.to_governorate,
+
+      [...imageUrls]
+        .sort()
+        .join(',')
+
+    ]
+      .map(
+        x => String(x ?? '').trim()
+      )
+      .join('|');
+
+  }
+
+
+  async function makeHash(
+    v,
+    imageUrls = []
+  ){
+
+    const data =
+      new TextEncoder().encode(
+        canonicalRequest(v,imageUrls)
+      );
+
+
+    const digest =
+      await crypto.subtle.digest(
+        'SHA-256',
+        data
+      );
+
+
+    return [
+      ...new Uint8Array(digest)
+    ]
+      .map(
+        b => b
+          .toString(16)
+          .padStart(2,'0')
+      )
+      .join('');
+
+  }
+
+
+  /* =====================================================
+     IMAGE PREVIEW
+  ===================================================== */
+
+  function renderSelectedImages(){
+
+    const box =
+      $('#imagePreviewGrid');
+
+    box.innerHTML = '';
+
+
+    existingImageUrls.forEach(
+      (url,i) => {
+
+        const el =
+          document.createElement('div');
+
+        el.className =
+          'image-thumb';
+
+
+        const img =
+          document.createElement('img');
+
+        img.src = url;
+
+        img.alt =
+          `صورة ${i+1}`;
+
+
+        const button =
+          document.createElement('button');
+
+        button.type = 'button';
+
+        button.title =
+          'حذف الصورة';
+
+        button.textContent = '×';
+
+
+        button.onclick = () => {
+
+          removedExistingImageUrls
+            .push(url);
+
+          existingImageUrls
+            .splice(i,1);
+
+          renderSelectedImages();
+
+        };
+
+
+        el.appendChild(img);
+
+        el.appendChild(button);
+
+        box.appendChild(el);
+
+      }
+    );
+
+
+    selectedImageFiles.forEach(
+      (file,i) => {
+
+        const el =
+          document.createElement('div');
+
+        el.className =
+          'image-thumb';
+
+
+        const img =
+          document.createElement('img');
+
+        img.alt =
+          `صورة جديدة ${i+1}`;
+
+
+        el.appendChild(img);
+
+
+        const b =
+          document.createElement('button');
+
+        b.type = 'button';
+
+        b.title =
+          'حذف الصورة';
+
+        b.textContent = '×';
+
+
+        b.onclick = () => {
+
+          selectedImageFiles
+            .splice(i,1);
+
+          renderSelectedImages();
+
+        };
+
+
+        el.appendChild(b);
+
+        box.appendChild(el);
+
+
+        const reader =
+          new FileReader();
+
+        reader.onload =
+          e =>
+            img.src =
+              e.target.result;
+
+        reader.readAsDataURL(file);
+
+      }
+    );
+
+  }
+
+
+  $('#requestImages')
+    .addEventListener(
+      'change',
+      e => {
+
+        const files =
+          [
+            ...e.target.files || []
+          ];
+
+
+        const valid =
+          files.filter(
+            f =>
+              f.type.startsWith('image/') &&
+              f.size <= 8 * 1024 * 1024
+          );
+
+
+        if(valid.length < files.length){
+
+          toast(
+            'تم تجاهل ملف غير صالح أو صورة أكبر من 8 ميجابايت'
+          );
+
+        }
+
+
+        selectedImageFiles
+          .push(...valid);
+
+
+        e.target.value = '';
+
+        renderSelectedImages();
+
+      }
+    );
+
+
+  $('#removeAllImagesBtn').onclick =
+    () => {
+
+      removedExistingImageUrls
+        .push(...existingImageUrls);
+
+      existingImageUrls = [];
+
+      selectedImageFiles = [];
+
+      renderSelectedImages();
+
+      toast(
+        'تم حذف كل الصور من الطلب'
+      );
+
+    };
+
+
+  /* =====================================================
+     STORAGE
+  ===================================================== */
+
+  async function uploadImage(file){
+
+    if(!file)
+      return null;
+
+
+    if(
+      file.size >
+      8 * 1024 * 1024
+    ){
+
+      throw new Error(
+        'حجم الصورة أكبر من 8 ميجابايت'
+      );
+
+    }
+
+
+    if(!file.type.startsWith('image/')){
+
+      throw new Error(
+        'الملف لازم يكون صورة'
+      );
+
+    }
+
+
+    const ext =
+      (
+        file.name
+          .split('.')
+          .pop() ||
+        'jpg'
+      )
+      .toLowerCase()
+      .replace(
+        /[^a-z0-9]/g,
+        ''
+      ) || 'jpg';
+
+
+    const path =
+      `requests/${crypto.randomUUID()}.${ext}`;
+
+
+    const {
+      error
+    } =
+      await sb.storage
+        .from('request-images')
+        .upload(
+          path,
+          file,
+          {
+            contentType:file.type,
+            upsert:false
+          }
+        );
+
+
+    if(error){
+
+      throw new Error(
+        'تعذر رفع الصورة: ' +
+        error.message
+      );
+
+    }
+
+
+    const {
+      data
+    } =
+      sb.storage
+        .from('request-images')
+        .getPublicUrl(path);
+
+
+    return data.publicUrl;
+
+  }
+
+
+  async function removeStorageUrls(urls){
+
+    const marker =
+      '/storage/v1/object/public/request-images/';
+
+
+    const paths =
+      urls
+        .map(
+          u => {
+
+            const i =
+              String(u || '')
+                .indexOf(marker);
+
+            return i >= 0
+              ? decodeURIComponent(
+                  String(u)
+                    .slice(
+                      i + marker.length
+                    )
+                )
+              : null;
+
+          }
+        )
+        .filter(Boolean);
+
+
+    if(paths.length){
+
+      await sb.storage
+        .from('request-images')
+        .remove(paths);
+
+    }
+
+  }
+
+
+  /* =====================================================
+     SUBMIT REQUEST
+  ===================================================== */
+
+  $('#requestForm').onsubmit =
+    async e => {
+
+      e.preventDefault();
+
+
+      /*
+        حماية إضافية ضد الضغط المتكرر
+      */
+
+      if(submitting)
+        return;
+
+
+      const v =
+        formData();
+
+
+      if(!validate(v)){
+
+        return toast(
+          hasImages()
+            ? 'اكتب الاسم ورقم الهاتف بشكل صحيح'
+            : 'راجع البيانات المطلوبة'
+        );
+
+      }
+
+
+      submitting = true;
+
+
+      const btn =
+        $('#submitRequestBtn');
+
+
+      btn.disabled = true;
+
+      btn.classList.add(
+        'submit-busy'
+      );
+
+      btn.textContent =
+        'جاري الإرسال...';
+
+
+      let uploaded = [];
+
+
+      try{
+
+        /*
+          رفع الصور الجديدة
+        */
+
+        for(
+          const file
+          of selectedImageFiles
+        ){
+
+          const url =
+            await uploadImage(file);
+
+          if(url)
+            uploaded.push(url);
+
+        }
+
+
+        /*
+          دمج الصور القديمة والجديدة
+        */
+
+        const finalImages =
+          [
+            ...existingImageUrls,
+            ...uploaded
+          ];
+
+
+        /*
+          Hash يعتمد على كل البيانات + كل الصور
+        */
+
+        const hash =
+          await makeHash(
+            v,
+            finalImages
+          );
+
+
+        /*
+          فحص التكرار
+        */
+
+        let duplicateQ =
+          sb
+            .from('requests')
+            .select('id,status')
+            .eq(
+              'request_hash',
+              hash
+            );
+
+
+        if(editingId){
+
+          duplicateQ =
+            duplicateQ.neq(
+              'id',
+              editingId
+            );
+
+        }
+
+
+        const {
+          data: dupe,
+          error: dupeErr
+        } =
+          await duplicateQ
+            .limit(1)
+            .maybeSingle();
+
+
+        if(
+          dupeErr &&
+          dupeErr.code !== 'PGRST116'
+        ){
+
+          throw dupeErr;
+
+        }
+
+
+        if(dupe){
+
+          await removeStorageUrls(
+            uploaded
+          );
+
+
+          return toast(
+            'هذا الطلب موجود بالفعل، لن يتم تكراره.'
+          );
+
+        }
+
+
+        /*
+          تجهيز البيانات
+        */
+
+        const payload = {
+
+          ...v,
+
+          image_urls:
+            finalImages,
+
+          status:
+            'pending',
+
+          reviewed_at:
+            null,
+
+          reviewed_by:
+            null,
+
+          rejection_reason:
+            null,
+
+          request_hash:
+            hash
+
+        };
+
+
+        let res;
+
+
+        /*
+          تعديل طلب موجود
+        */
+
+        if(editingId){
+
+          payload.resubmitted_at =
+            new Date().toISOString();
+
+
+          res =
+            await sb
+              .from('requests')
+              .update(payload)
+              .eq(
+                'id',
+                editingId
+              );
+
+        }
+
+        /*
+          طلب جديد
+        */
+
+        else{
+
+          res =
+            await sb
+              .from('requests')
+              .insert(payload);
+
+        }
+
+
+        if(res.error){
+
+          await removeStorageUrls(
+            uploaded
+          );
+
+
+          if(
+            res.error.code === '23505'
+          ){
+
+            return toast(
+              'الطلب موجود بالفعل، تم منع التكرار.'
+            );
+
+          }
+
+
+          return toast(
+            'تعذر حفظ الطلب: ' +
+            res.error.message
+          );
+
+        }
+
+
+        /*
+          حذف الصور القديمة التي اختار المستخدم حذفها
+        */
+
+        if(
+          editingId &&
+          removedExistingImageUrls.length
+        ){
+
+          await removeStorageUrls(
+            removedExistingImageUrls
+          );
+
+        }
+
+
+        toast(
+          editingId
+            ? 'تم إرسال التعديل للأدمن'
+            : 'تم إرسال الطلب للأدمن'
+        );
+
+
+        resetForm();
+
+
+        switchPage(
+          'inquiry'
+        );
+
+
+      }catch(err){
+
+        await removeStorageUrls(
+          uploaded
+        ).catch(
+          () => {}
+        );
+
+
+        toast(
+          err?.message ||
+          'حدث خطأ أثناء إرسال الطلب'
+        );
+
+
+      }finally{
+
+        submitting = false;
+
+        btn.disabled = false;
+
+        btn.classList.remove(
+          'submit-busy'
+        );
+
+        btn.textContent =
+          'إرسال الطلب';
+
+      }
+
+    };
+
+
+  /* =====================================================
+     RESET FORM
+  ===================================================== */
+
+  function resetForm(){
+
+    editingId = null;
+
+    selectedImageFiles = [];
+
+    existingImageUrls = [];
+
+    removedExistingImageUrls = [];
+
+
+    $('#requestForm').reset();
+
+    $('#dynamicFields').innerHTML = '';
+
+    $('#imagePreviewGrid').innerHTML = '';
+
+
+    $$('.error')
+      .forEach(
+        x => x.textContent = ''
+      );
+
+  }
+
+
+  $('#cancelFormBtn').onclick =
+    () => {
+
+      resetForm();
+
+      switchPage('home');
+
+    };
+
+
+  /* =====================================================
+     INQUIRY
+  ===================================================== */
+
+  const PAGE_SIZE = 50;
+
+  let inquiryPage = 0;
+
+  let inquiryTotal = 0;
+
+  let inquiryTimer = null;
+
+  let requestsPage = 0;
+
+  let requestsTotal = 0;
+
+
+  async function loadInquiry(
+    resetPage = true
+  ){
+
+    if(resetPage)
+      inquiryPage = 0;
+
+
+    const n =
+      $('#searchName')
+        .value
+        .trim();
+
+    const nid =
+      $('#searchNational')
+        .value
+        .trim();
+
+    const ph =
+      $('#searchPhone')
+        .value
+        .trim();
+
+
+    let q =
+      sb
+        .from('requests_public')
+        .select(
+          '*',
+          {count:'exact'}
+        )
+        .order(
+          'serial_no',
+          {ascending:true}
+        )
+        .range(
+          inquiryPage * PAGE_SIZE,
+          (inquiryPage + 1) * PAGE_SIZE - 1
+        );
+
+
+    if(n)
+      q =
+        q.ilike(
+          'full_name',
+          `%${n}%`
+        );
+
+
+    if(nid)
+      q =
+        q.ilike(
+          'national_id',
+          `%${nid}%`
+        );
+
+
+    if(ph)
+      q =
+        q.ilike(
+          'phone',
+          `%${ph}%`
+        );
+
+
+    const {
+      data,
+      error,
+      count
+    } =
+      await q;
+
+
+    if(error){
+
+      $('#inquiryBody')
+        .innerHTML = '';
+
+      $('#inquiryEmpty')
+        .classList
+        .remove('hidden');
+
+      return toast(
+        'تعذر تحميل الاستعلام'
+      );
+
+    }
+
+
+    allRequests =
+      data || [];
+
+    inquiryTotal =
+      count || 0;
+
+
+    renderInquiry();
+
+    updateInquiryPager();
+
+  }
+
+
+  function updateInquiryPager(){
+
+    const pages =
+      Math.max(
+        1,
+        Math.ceil(
+          inquiryTotal /
+          PAGE_SIZE
+        )
+      );
+
+
+    $('#inquiryPageInfo')
+      .textContent =
+      `صفحة ${inquiryPage + 1} من ${pages}`;
+
+
+    $('#inquiryPrev')
+      .disabled =
+      inquiryPage === 0;
+
+
+    $('#inquiryNext')
+      .disabled =
+      inquiryPage >= pages - 1 ||
+      inquiryTotal === 0;
+
+  }
+
+
+  function statusBadge(s){
+
+    if(s === 'done'){
+
+      return `
+        <span class="badge done">
+          تم
+        </span>
+      `;
+
+    }
+
+
+    if(s === 'rejected'){
+
+      return `
+        <span class="badge rejected">
+          ملغي
+        </span>
+      `;
+
+    }
+
+
+    return `
+      <span class="badge pending">
+        قيد المراجعة
+      </span>
+    `;
+
+  }
+
+
+  function renderInquiry(){
+
+    const rows =
+      allRequests;
+
+
+    $('#inquiryEmpty')
+      .classList
+      .toggle(
+        'hidden',
+        rows.length > 0
+      );
+
+
+    $('#inquiryBody')
+      .innerHTML =
+      rows
+        .map(
+          x => `
+
+            <tr
+              class="clickable"
+              data-id="${x.id}"
+            >
+
+              <td>
+                #${esc(x.serial_no)}
+              </td>
+
+              <td>
+                ${esc(x.full_name)}
+              </td>
+
+              <td>
+                ${esc(x.national_id)}
+              </td>
+
+              <td>
+                ${esc(x.mother_name)}
+              </td>
+
+              <td>
+                ${esc(x.phone)}
+              </td>
+
+              <td>
+                ${arDate(x.created_at)}
+              </td>
+
+              <td>
+                ${arDate(x.reviewed_at)}
+              </td>
+
+              <td>
+                ${esc(x.case_type)}
+              </td>
+
+              <td>
+                ${
+                  x.paid_amount === null ||
+                  x.paid_amount === undefined
+                    ? '—'
+                    : Number(
+                        x.paid_amount
+                      ).toLocaleString('ar-EG')
+                }
+              </td>
+
+              <td>
+                ${statusBadge(x.status)}
+              </td>
+
+            </tr>
+
+          `
+        )
+        .join('');
+
+
+    $$('#inquiryBody tr')
+      .forEach(
+        r =>
+          r.onclick =
+            () =>
+              openDetails(
+                r.dataset.id
+              )
+      );
+
+  }
+
+
+  ['#searchName','#searchNational','#searchPhone']
+    .forEach(
+      id =>
+        $(id).addEventListener(
+          'input',
+          () => {
+
+            clearTimeout(
+              inquiryTimer
+            );
+
+
+            inquiryTimer =
+              setTimeout(
+                () =>
+                  loadInquiry(true),
+                250
+              );
+
+          }
+        )
+    );
+
+
+  $('#inquiryPrev').onclick =
+    () => {
+
+      if(inquiryPage > 0){
+
+        inquiryPage--;
+
+        loadInquiry(false);
+
+      }
+
+    };
+
+
+  $('#inquiryNext').onclick =
+    () => {
+
+      const pages =
+        Math.ceil(
+          inquiryTotal /
+          PAGE_SIZE
+        );
+
+
+      if(
+        inquiryPage <
+        pages - 1
+      ){
+
+        inquiryPage++;
+
+        loadInquiry(false);
+
+      }
+
+    };
+
+
+  /* =====================================================
+     ESCAPE HTML
+  ===================================================== */
+
+  const esc = s =>
+    String(
+      s ?? '—'
+    )
+      .replace(
+        /[&<>'"]/g,
+        c =>
+          ({
+            '&':'&amp;',
+            '<':'&lt;',
+            '>':'&gt;',
+            "'":'&#39;',
+            '"':'&quot;'
+          }[c])
+      );
+
+
+  /* =====================================================
+     REQUEST KEY/VALUE
+  ===================================================== */
+
+  function requestKV(
+    label,
+    value
+  ){
+
+    const raw =
+      String(
+        value ?? ''
+      ).trim();
+
+
+    const shown =
+      raw || '—';
+
+
+    return `
+
+      <div class="kv">
+
+        <small>
+          ${esc(label)}
+        </small>
+
+        <div class="kv-value">
+          ${esc(shown)}
+        </div>
+
+        ${
+          raw
+            ? `
+              <button
+                type="button"
+                class="kv-copy"
+                data-copy="${encodeURIComponent(raw)}"
+                title="نسخ"
+                aria-label="نسخ ${esc(label)}"
+              >
+                ⧉
+              </button>
+            `
+            : ''
+        }
+
+      </div>
+
+    `;
+
+  }
+
+
+  /* =====================================================
+     PENDING COUNT
+  ===================================================== */
+
+  async function loadPendingCount(){
+
+    if(currentRole !== 'admin')
+      return;
+
+
+    const {
+      count,
+      error
+    } =
+      await sb
+        .from('requests')
+        .select(
+          'id',
+          {
+            count:'exact',
+            head:true
+          }
+        )
+        .eq(
+          'status',
+          'pending'
+        );
+
+
+    if(error)
+      return;
+
+
+    setPendingCount(
+      count || 0
+    );
+
+  }
+
+
+  function setPendingCount(count){
+
+    const n =
+      Number(count) || 0;
+
+
+    [
+      '#requestsCount'
+    ]
+      .forEach(
+        sel => {
+
+          const el =
+            $(sel);
+
+          if(!el)
+            return;
+
+
+          el.textContent =
+            n;
+
+
+          el.classList.toggle(
+            'zero',
+            n === 0
+          );
+
+        }
+      );
+
+  }
+
+
+  /* =====================================================
+     ADMIN REQUESTS
+  ===================================================== */
+
+  async function loadRequests(
+    resetPage = true
+  ){
+
+    if(currentRole !== 'admin')
+      return switchPage('home');
+
+
+    if(resetPage)
+      requestsPage = 0;
+
+
+    const {
+      data,
+      error,
+      count
+    } =
+      await sb
+        .from('requests')
+        .select(
+          '*',
+          {
+            count:'exact'
+          }
+        )
+        .eq(
+          'status',
+          'pending'
+        )
+        .order(
+          'created_at',
+          {
+            ascending:true
+          }
+        )
+        .range(
+          requestsPage * PAGE_SIZE,
+          (requestsPage + 1) * PAGE_SIZE - 1
+        );
+
+
+    if(error)
+      return toast(
+        'تعذر تحميل الطلبات'
+      );
+
+
+    const list =
+      data || [];
+
+
+    requestsTotal =
+      count || 0;
+
+
+    setPendingCount(
+      requestsTotal
+    );
+
+
+    $('#requestsEmpty')
+      .classList
+      .toggle(
+        'hidden',
+        requestsTotal > 0
+      );
+
+
+    const pages =
+      Math.max(
+        1,
+        Math.ceil(
+          requestsTotal /
+          PAGE_SIZE
+        )
+      );
+
+
+    $('#requestsPageInfo')
+      .textContent =
+      `صفحة ${requestsPage + 1} من ${pages}`;
+
+
+    $('#requestsPrev')
+      .disabled =
+      requestsPage === 0;
+
+
+    $('#requestsNext')
+      .disabled =
+      requestsPage >= pages - 1 ||
+      requestsTotal === 0;
+
+
+    $('#requestsList')
+      .innerHTML =
+      list
+        .map(
+          x => `
+
+            <article
+              class="request-card"
+            >
+
+              <div class="request-top">
+
+                <div>
+
+                  <h3>
+
+                    ${esc(x.full_name)}
+
+                    <span class="badge pending">
+                      #${esc(x.serial_no || '—')}
+                    </span>
+
+                  </h3>
+
+                  <div class="muted">
+                    أُرسل ${arDate(x.created_at)}
+                  </div>
+
+                </div>
+
+
+                <div class="form-actions">
+
+                  <button
+                    class="btn success"
+                    onclick="approveRequest('${x.id}')"
+                  >
+                    تم
+                  </button>
+
+
+                  <button
+                    class="btn danger"
+                    onclick="rejectRequest('${x.id}')"
+                  >
+                    إلغاء مع السبب
+                  </button>
+
+
+                  <button
+                    class="btn ghost"
+                    onclick="openAdminDetails('${x.id}')"
+                  >
+                    كل البيانات
+                  </button>
+
+                </div>
+
+              </div>
+
+
+              <div class="request-grid">
+
+                ${requestKV('الاسم رباعي',x.full_name)}
+
+                ${requestKV('اسم الأم',x.mother_name)}
+
+                ${requestKV('الرقم القومي',x.national_id)}
+
+                ${requestKV('رقم المصنع',x.factory_number)}
+
+                ${requestKV('رقم الهاتف',x.phone)}
+
+                ${requestKV(
+                  'دفع كام',
+                  x.paid_amount === null
+                    ? ''
+                    : Number(
+                        x.paid_amount
+                      ).toLocaleString('ar-EG')
+                )}
+
+                ${requestKV(
+                  'المتبقي',
+                  x.remaining_amount === null
+                    ? ''
+                    : Number(
+                        x.remaining_amount
+                      ).toLocaleString('ar-EG')
+                )}
+
+                ${requestKV(
+                  'سبب الحالة',
+                  x.case_type
+                )}
+
+                ${requestKV(
+                  'تاريخ الإرسال',
+                  arDate(x.created_at)
+                )}
+
+                ${requestKV(
+                  'عدد الصور',
+                  Array.isArray(x.image_urls)
+                    ? x.image_urls.length
+                    : 0
+                )}
+
+              </div>
+
+
+              ${renderAdminImages(x)}
+
+            </article>
+
+          `
+        )
+        .join('');
+
+  }
+
+
+  function renderAdminImages(x){
+
+    const urls =
+      Array.isArray(x.image_urls)
+        ? x.image_urls
+        : [];
+
+
+    if(!urls.length)
+      return '';
+
+
+    return `
+
+      <div
+        class="field"
+        style="margin-top:14px"
+      >
+
+        <label>
+          صور الطلب
+        </label>
+
+
+        <div class="details-photo-grid">
+
+          ${urls
+            .map(
+              (u,i) => `
+
+                <div class="details-photo-card">
+
+                  <img
+                    src="${esc(u)}"
+                    alt="صورة ${i+1}"
+                  >
+
+
+                  <div class="details-photo-actions">
+
+                    <button
+                      class="btn ghost"
+                      type="button"
+                      onclick="downloadImage('${encodeURIComponent(u)}','${x.serial_no || 'request'}-${i+1}')"
+                    >
+                      حفظ
+                    </button>
+
+                  </div>
+
+                </div>
+
+              `
+            )
+            .join('')}
+
+        </div>
+
+
+        <button
+          class="btn primary"
+          type="button"
+          onclick="downloadAllImages('${x.id}')"
+        >
+          ⬇ حفظ كل الصور
+        </button>
+
+      </div>
+
+    `;
+
+  }
+
+
+  $('#requestsPrev').onclick =
+    () => {
+
+      if(requestsPage > 0){
+
+        requestsPage--;
+
+        loadRequests(false);
+
+      }
+
+    };
+
+
+  $('#requestsNext').onclick =
+    () => {
+
+      const pages =
+        Math.ceil(
+          requestsTotal /
+          PAGE_SIZE
+        );
+
+
+      if(
+        requestsPage <
+        pages - 1
+      ){
+
+        requestsPage++;
+
+        loadRequests(false);
+
+      }
+
+    };
+
+
+  /* =====================================================
+     COPY BUTTON
+  ===================================================== */
+
+  $('#requestsList')
+    .addEventListener(
+      'click',
+      async e => {
+
+        const btn =
+          e.target.closest(
+            '.kv-copy'
+          );
+
+
+        if(!btn)
+          return;
+
+
+        e.stopPropagation();
+
+
+        const value =
+          decodeURIComponent(
+            btn.dataset.copy || ''
+          );
+
+
+        try{
+
+          await navigator.clipboard
+            .writeText(value);
+
+        }catch(err){
+
+          const ta =
+            document.createElement(
+              'textarea'
+            );
+
+          ta.value =
+            value;
+
+          document.body.appendChild(
+            ta
+          );
+
+          ta.select();
+
+          document.execCommand(
+            'copy'
+          );
+
+          ta.remove();
+
+        }
+
+
+        btn.classList.add(
+          'copied'
+        );
+
+        btn.textContent =
+          '✓';
+
+
+        toast(
+          'تم نسخ البيانات'
+        );
+
+
+        setTimeout(
+          () => {
+
+            btn.classList.remove(
+              'copied'
+            );
+
+            btn.textContent =
+              '⧉';
+
+          },
+          900
+        );
+
+      }
+    );
+
+
+  $('#refreshRequests').onclick =
+    () =>
+      loadRequests(true);
+
+
+  /* =====================================================
+     APPROVE
+  ===================================================== */
+
+  window.approveRequest =
+    async id => {
+
+      const {
+        error
+      } =
+        await sb.rpc(
+          'admin_review_request',
+          {
+            p_request_id:id,
+            p_action:'done',
+            p_reason:null
+          }
+        );
+
+
+      if(error)
+        return toast(
+          error.message
+        );
+
+
+      toast(
+        'تم اعتماد الطلب'
+      );
+
+
+      await loadRequests();
+
+      await loadPendingCount();
+
+    };
+
+
+  /* =====================================================
+     REJECT
+  ===================================================== */
+
+  window.rejectRequest =
+    async id => {
+
+      showModal(
+        'إلغاء الطلب',
+        `
+
+          <div class="field">
+
+            <label>
+              سبب الإلغاء *
+            </label>
+
+            <textarea
+              id="rejectReason"
+              class="textarea"
+              placeholder="اكتب السبب بوضوح"
+            ></textarea>
+
+          </div>
+
+
+          <div
+            class="form-actions"
+            style="margin-top:14px"
+          >
+
+            <button
+              class="btn danger"
+              id="sendReject"
+            >
+              إرسال الإلغاء
+            </button>
+
+            <button
+              class="btn ghost"
+              id="cancelReject"
+            >
+              رجوع
+            </button>
+
+          </div>
+
+        `
+      );
+
+
+      $('#cancelReject').onclick =
+        closeModal;
+
+
+      $('#sendReject').onclick =
+        async () => {
+
+          const reason =
+            $('#rejectReason')
+              .value
+              .trim();
+
+
+          if(!reason)
+            return toast(
+              'اكتب سبب الإلغاء'
+            );
+
+
+          const {
+            error
+          } =
+            await sb.rpc(
+              'admin_review_request',
+              {
+                p_request_id:id,
+                p_action:'rejected',
+                p_reason:reason
+              }
+            );
+
+
+          if(error)
+            return toast(
+              error.message
+            );
+
+
+          closeModal();
+
+
+          toast(
+            'تم إلغاء الطلب وتسجيل السبب'
+          );
+
+
+          await loadRequests();
+
+          await loadPendingCount();
+
+        };
+
+    };
+
+
+  /* =====================================================
+     DETAILS
+  ===================================================== */
+
+  window.openAdminDetails =
+    async id => {
+
+      const {
+        data,
+        error
+      } =
+        await sb
+          .from('requests')
+          .select('*')
+          .eq('id',id)
+          .single();
+
+
+      if(error)
+        return toast(
+          'تعذر تحميل البيانات'
+        );
+
+
+      renderDetails(
+        data,
+        false
+      );
+
+    };
+
+
+  function openDetails(id){
+
+    const x =
+      allRequests.find(
+        r =>
+          String(r.id) ===
+          String(id)
+      );
+
+
+    if(x)
+      renderDetails(
+        x,
+        true
+      );
+
+  }
+
+
+  function showModal(
+    title,
+    html
+  ){
+
+    $('#modalTitle')
+      .textContent =
+      title;
+
+    $('#modalContent')
+      .innerHTML =
+      html;
+
+    $('#modal')
+      .classList
+      .remove('hidden');
+
+  }
+
+
+  function closeModal(){
+
+    $('#modal')
+      .classList
+      .add('hidden');
+
+  }
+
+
+  $('#closeModal').onclick =
+    closeModal;
+
+
+  $('#modal')
+    .addEventListener(
+      'click',
+      e => {
+
+        if(e.target.id === 'modal')
+          closeModal();
+
+      }
+    );
+
+
+  /* =====================================================
+     DETAILS RENDER
+  ===================================================== */
+
+  function renderDetails(
+    x,
+    publicView
+  ){
+
+    const fields = [
+
+      ['الترتيب',
+        '#' + (x.serial_no ?? '—')
+      ],
+
+      ['الاسم',
+        x.full_name
+      ],
+
+      ['اسم الأم',
+        x.mother_name
+      ],
+
+      ['الرقم القومي',
+        x.national_id
+      ],
+
+      ['رقم المصنع',
+        x.factory_number
+      ],
+
+      ['الهاتف',
+        x.phone
+      ],
+
+      ['دفع كام',
+        x.paid_amount
+      ],
+
+      ['المتبقي',
+        x.remaining_amount
+      ],
+
+      ['سبب الحالة',
+        x.case_type
+      ],
+
+      ['المكتب',
+        x.office_name
+      ],
+
+      ['سبب الفصل',
+        x.separation_reason
+      ],
+
+      ['سبب الضم',
+        x.merge_reason
+      ],
+
+      ['الاسم المرتبط بالضم',
+        x.related_name
+      ],
+
+      ['الرقم القومي المرتبط',
+        x.related_national_id
+      ],
+
+      ['المحافظة الحالية',
+        x.from_governorate
+      ],
+
+      ['المحافظة الجديدة',
+        x.to_governorate
+      ],
+
+      ['تاريخ الإرسال',
+        arDate(x.created_at)
+      ],
+
+      ['تاريخ الموافقة/الإلغاء',
+        arDate(x.reviewed_at)
+      ],
+
+      ['المراجعة',
+        x.status === 'done'
+          ? 'تم'
+          : x.status === 'rejected'
+            ? 'ملغي'
+            : 'قيد المراجعة'
+      ]
+
+    ];
+
+
+    const reason =
+      x.rejection_reason
+        ? `
+
+          <div
+            class="field"
+            style="margin-top:16px"
+          >
+
+            <label>
+              سبب الإلغاء من الأدمن
+            </label>
+
+            <textarea
+              class="textarea"
+              readonly
+            >${esc(x.rejection_reason)}</textarea>
+
+          </div>
+
+        `
+        : '';
+
+
+    const urls =
+      Array.isArray(x.image_urls)
+        ? x.image_urls
+        : [];
+
+
+    const photos =
+      urls.length
+        ? `
+
+          <div
+            class="field"
+            style="margin-bottom:18px"
+          >
+
+            <div
+              class="panel-head"
+              style="margin-bottom:10px"
+            >
+
+              <label>
+                الصور (${urls.length})
+              </label>
+
+
+              ${
+                currentRole === 'admin'
+                  ? `
+                    <button
+                      class="btn primary"
+                      type="button"
+                      id="downloadAllModalBtn"
+                    >
+                      ⬇ حفظ كل الصور
+                    </button>
+                  `
+                  : ''
+              }
+
+            </div>
+
+
+            <div class="details-photo-grid">
+
+              ${urls
+                .map(
+                  (u,i) => `
+
+                    <div class="details-photo-card">
+
+                      <img
+                        src="${esc(u)}"
+                        alt="صورة ${i+1}"
+                      >
+
+
+                      <div class="details-photo-actions">
+
+                        <button
+                          class="btn ghost"
+                          type="button"
+                          onclick="downloadImage('${encodeURIComponent(u)}','${x.serial_no || 'request'}-${i+1}')"
+                        >
+                          حفظ
+                        </button>
+
+                      </div>
+
+                    </div>
+
+                  `
+                )
+                .join('')}
+
+            </div>
+
+          </div>
+
+        `
+        : '';
+
+
+    const edit =
+      publicView
+
+        ? `
+
+          <div
+            class="form-actions"
+            style="margin-top:16px"
+          >
+
+            <button
+              class="btn primary"
+              id="editReqBtn"
+            >
+              تعديل وإعادة إرسال
+            </button>
+
+
+            ${
+              currentRole === 'admin'
+                ? `
+                  <button
+                    class="btn danger"
+                    id="deleteReqBtn"
+                  >
+                    حذف البيانات
+                  </button>
+                `
+                : ''
+            }
+
+
+            <button
+              class="btn ghost"
+              id="exitDetails"
+            >
+              إلغاء
+            </button>
+
+          </div>
+
+        `
+
+        : `
+
+          <div
+            class="form-actions"
+            style="margin-top:16px"
+          >
+
+            <button
+              class="btn danger"
+              id="deleteReqBtn"
+            >
+              حذف البيانات
+            </button>
+
+            <button
+              class="btn ghost"
+              id="exitDetails"
+            >
+              إغلاق
+            </button>
+
+          </div>
+
+        `;
+
+
+    showModal(
+      'تفاصيل الطلب',
+
+      `
+
+        ${photos}
+
+
+        <div class="details-grid">
+
+          ${
+            fields
+              .filter(
+                f =>
+                  f[1] !== null &&
+                  f[1] !== undefined &&
+                  f[1] !== ''
+              )
+              .map(
+                f => `
+
+                  <div class="kv">
+
+                    <small>
+                      ${esc(f[0])}
+                    </small>
+
+                    <div class="kv-value">
+                      ${esc(f[1])}
+                    </div>
+
+                  </div>
+
+                `
+              )
+              .join('')
+          }
+
+        </div>
+
+
+        ${reason}
+
+        ${edit}
+
+      `
+    );
+
+
+    $('#exitDetails').onclick =
+      closeModal;
+
+
+    $('#deleteReqBtn').onclick =
+      () =>
+        deleteRequest(x);
+
+
+    if($('#downloadAllModalBtn')){
+
+      $('#downloadAllModalBtn').onclick =
+        () =>
+          downloadAllImages(x.id);
+
+    }
+
+
+    if(
+      publicView &&
+      $('#editReqBtn')
+    ){
+
+      $('#editReqBtn').onclick =
+        () =>
+          startEdit(x);
+
+    }
+
+  }
+
+
+  /* =====================================================
+     DOWNLOAD IMAGE
+  ===================================================== */
+
+  window.downloadImage =
+    async function(
+      encoded,
+      name
+    ){
+
+      try{
+
+        const url =
+          decodeURIComponent(
+            encoded
+          );
+
+
+        const r =
+          await fetch(url);
+
+
+        if(!r.ok)
+          throw new Error();
+
+
+        const blob =
+          await r.blob();
+
+
+        const objectUrl =
+          URL.createObjectURL(blob);
+
+
+        const a =
+          document.createElement('a');
+
+
+        a.href =
+          objectUrl;
+
+
+        a.download =
+          `${name}.jpg`;
+
+
+        document.body.appendChild(a);
+
+        a.click();
+
+        a.remove();
+
+
+        setTimeout(
+          () =>
+            URL.revokeObjectURL(
+              objectUrl
+            ),
+          1000
+        );
+
+
+      }catch(e){
+
+        window.open(
+          decodeURIComponent(encoded),
+          '_blank'
+        );
+
+
+        toast(
+          'فتح الصورة للحفظ اليدوي'
+        );
+
+      }
+
+    };
+
+
+  /* =====================================================
+     DOWNLOAD ALL
+  ===================================================== */
+
+  window.downloadAllImages =
+    async function(id){
+
+      const {
+        data,
+        error
+      } =
+        await sb
+          .from('requests')
+          .select(
+            'serial_no,image_urls'
+          )
+          .eq('id',id)
+          .single();
+
+
+      if(error)
+        return toast(
+          'تعذر تحميل الصور'
+        );
+
+
+      const urls =
+        Array.isArray(
+          data.image_urls
+        )
+          ? data.image_urls
+          : [];
+
+
+      if(!urls.length)
+        return toast(
+          'لا توجد صور'
+        );
+
+
+      for(
+        let i = 0;
+        i < urls.length;
+        i++
+      ){
+
+        await downloadImage(
+          encodeURIComponent(
+            urls[i]
+          ),
+          `${data.serial_no || 'request'}-${i+1}`
+        );
+
+      }
+
+
+      toast(
+        'تم تجهيز الصور للحفظ'
+      );
+
+    };
+
+
+  /* =====================================================
+     DELETE REQUEST
+  ===================================================== */
+
+  async function deleteRequest(x){
+
+    if(currentRole !== 'admin')
+      return toast(
+        'الحذف متاح للأدمن فقط'
+      );
+
+
+    if(
+      !confirm(
+        `هل أنت متأكد من حذف بيانات ${x.full_name} نهائيًا؟`
+      )
+    )
+      return;
+
+
+    const {
+      error
+    } =
+      await sb
+        .from('requests')
+        .delete()
+        .eq('id',x.id);
+
+
+    if(error)
+      return toast(
+        'تعذر حذف البيانات: ' +
+        error.message
+      );
+
+
+    /*
+      حذف الصور من Storage
+    */
+
+    try{
+
+      await removeStorageUrls(
+        Array.isArray(x.image_urls)
+          ? x.image_urls
+          : []
+      );
+
+    }catch(_){}
+
+
+    closeModal();
+
+
+    toast(
+      'تم حذف بيانات الشخص نهائيًا'
+    );
+
+
+    loadInquiry(true);
+
+    loadPendingCount();
+
+
+    if(
+      !$('#requestsPage')
+        .classList
+        .contains('hidden')
+    ){
+
+      loadRequests(true);
+
+    }
+
+  }
+
+
+  /* =====================================================
+     EDIT REQUEST
+  ===================================================== */
+
+  function startEdit(x){
+
+    editingId =
+      x.id;
+
+
+    selectedImageFiles =
+      [];
+
+
+    existingImageUrls =
+      Array.isArray(x.image_urls)
+        ? [...x.image_urls]
+        : (
+            x.image_url
+              ? [x.image_url]
+              : []
+          );
+
+
+    removedExistingImageUrls =
+      [];
+
+
+    closeModal();
+
+    switchPage('add');
+
+
+    $('#fullName').value =
+      x.full_name || '';
+
+
+    $('#motherName').value =
+      x.mother_name || '';
+
+
+    $('#nationalId').value =
+      x.national_id || '';
+
+
+    $('#factoryNumber').value =
+      x.factory_number || '';
+
+
+    $('#phone').value =
+      x.phone || '';
+
+
+    $('#paidAmount').value =
+      x.paid_amount ?? '';
+
+
+    $('#remainingAmount').value =
+      x.remaining_amount ?? '';
+
+
+    $('#caseType').value =
+      x.case_type || '';
+
+
+    renderDynamic();
+
+
+    if($('#officeName'))
+      $('#officeName').value =
+        x.office_name || '';
+
+
+    if($('#separationReason'))
+      $('#separationReason').value =
+        x.separation_reason || '';
+
+
+    if($('#mergeReason'))
+      $('#mergeReason').value =
+        x.merge_reason || '';
+
+
+    if($('#relatedName'))
+      $('#relatedName').value =
+        x.related_name || '';
+
+
+    if($('#relatedNationalId'))
+      $('#relatedNationalId').value =
+        x.related_national_id || '';
+
+
+    if($('#fromGovernorate'))
+      $('#fromGovernorate').value =
+        x.from_governorate || '';
+
+
+    if($('#toGovernorate'))
+      $('#toGovernorate').value =
+        x.to_governorate || '';
+
+
+    renderSelectedImages();
+
+
+    window.scrollTo({
+      top:0,
+      behavior:'smooth'
+    });
+
+  }
+
+
+  /* =====================================================
+     REALTIME - INSIDE SITE ONLY
+     لا يوجد Push ولا VAPID
+  ===================================================== */
+
+  function notifyAdminNewRequest(row){
+
+    if(currentRole !== 'admin')
+      return;
+
+
+    $('#requestNotifyDot')
+      .classList
+      .remove('hidden');
+
+
+    toast(
+      `🔔 طلب جديد من ${row?.full_name || 'مستخدم'}${
+        row?.phone
+          ? ' — ' + row.phone
+          : ''
+      }`
+    );
+
+  }
+
+
   function startRequestRealtime(){
-    if(requestChannel||currentRole!=='admin')return;
-    requestChannel=sb.channel('pending-requests-live-'+crypto.randomUUID())
-      .on('postgres_changes',{event:'INSERT',schema:'public',table:'requests',filter:'status=eq.pending'},payload=>{
-        const now=Date.now();if(now-lastRealtimeNotice<800)return;lastRealtimeNotice=now;
-        notifyAdminNewRequest(payload.new);loadPendingCount();
-        if(!$('#requestsPage').classList.contains('hidden'))loadRequests(true);
-      })
-      .on('postgres_changes',{event:'UPDATE',schema:'public',table:'requests'},()=>{loadPendingCount();if(!$('#requestsPage').classList.contains('hidden'))loadRequests()})
-      .on('postgres_changes',{event:'DELETE',schema:'public',table:'requests'},()=>{loadPendingCount();if(!$('#requestsPage').classList.contains('hidden'))loadRequests()})
-      .subscribe();
+
+    if(
+      requestChannel ||
+      currentRole !== 'admin'
+    )
+      return;
+
+
+    requestChannel =
+      sb
+        .channel(
+          'pending-requests-live-' +
+          crypto.randomUUID()
+        )
+
+
+        .on(
+          'postgres_changes',
+          {
+            event:'INSERT',
+            schema:'public',
+            table:'requests',
+            filter:'status=eq.pending'
+          },
+
+          payload => {
+
+            const now =
+              Date.now();
+
+
+            /*
+              منع إشعارين لنفس الحدث
+            */
+
+            if(
+              now -
+              lastRealtimeNotice <
+              800
+            )
+              return;
+
+
+            lastRealtimeNotice =
+              now;
+
+
+            notifyAdminNewRequest(
+              payload.new
+            );
+
+
+            loadPendingCount();
+
+
+            if(
+              !$('#requestsPage')
+                .classList
+                .contains('hidden')
+            ){
+
+              loadRequests(true);
+
+            }
+
+          }
+        )
+
+
+        .on(
+          'postgres_changes',
+          {
+            event:'UPDATE',
+            schema:'public',
+            table:'requests'
+          },
+
+          () => {
+
+            loadPendingCount();
+
+
+            if(
+              !$('#requestsPage')
+                .classList
+                .contains('hidden')
+            ){
+
+              loadRequests();
+
+            }
+
+          }
+        )
+
+
+        .on(
+          'postgres_changes',
+          {
+            event:'DELETE',
+            schema:'public',
+            table:'requests'
+          },
+
+          () => {
+
+            loadPendingCount();
+
+
+            if(
+              !$('#requestsPage')
+                .classList
+                .contains('hidden')
+            ){
+
+              loadRequests();
+
+            }
+
+          }
+        )
+
+
+        .subscribe();
+
   }
-  if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(()=>{});}
-  (async()=>{const {data}=await sb.auth.getSession();if(data.session){const {data:p}=await sb.from('admin_profiles').select('user_id').eq('user_id',data.session.user.id).maybeSingle();if(p){enterApp('admin');startRequestRealtime()}}})();
+
+
+  /* =====================================================
+     RESTORE ADMIN SESSION
+  ===================================================== */
+
+  (async () => {
+
+    try{
+
+      const {
+        data
+      } =
+        await sb.auth.getSession();
+
+
+      if(
+        data &&
+        data.session
+      ){
+
+        const {
+          data: p
+        } =
+          await sb
+            .from('admin_profiles')
+            .select('user_id')
+            .eq(
+              'user_id',
+              data.session.user.id
+            )
+            .maybeSingle();
+
+
+        if(p){
+
+          await enterApp(
+            'admin'
+          );
+
+        }
+
+      }
+
+    }catch(e){
+
+      console.warn(
+        'Session restore failed',
+        e
+      );
+
+    }
+
+  })();
+
 </script>
+
 </body>
 </html>
