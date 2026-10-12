@@ -946,7 +946,7 @@
           </div>
 
           <div class="note">
-            اكتب اسم المستخدم فقط، مثل: admin
+            اكتب اسم المستخدم فقط
           </div>
 
         </div>
@@ -1952,49 +1952,43 @@
     () =>
       enterApp('guest');
 
+ 
+async function enterApp(role, targetPage = 'home', routeOptions = {}) {
+  currentRole = role;
 
-  async function enterApp(role, targetPage='home', routeOptions={}){
+  $('#loginView').classList.add('hidden');
+  $('#appView').classList.remove('hidden');
 
-    currentRole = role;
+  let displayName = 'ضيف';
 
-    $('#loginView')
-      .classList.add('hidden');
+  if (role === 'admin') {
+    const { data: { user } } = await sb.auth.getUser();
 
-    $('#appView')
-      .classList.remove('hidden');
-
-    $('#roleLabel').textContent =
-      role === 'admin'
-        ? 'أدمن'
-        : 'ضيف';
-
-
-    $('#requestsNav')
-      .classList.toggle(
-        'hidden',
-        role !== 'admin'
-      );
-
-
-    $('#requestsCard')
-      .classList.toggle(
-        'hidden',
-        role !== 'admin'
-      );
-
-
-    if(role === 'admin'){
-
-      await loadPendingCount();
-
-      startRequestRealtime();
-
+    if (user) {
+      if (user.id === 'a3f7c3c8-72b6-4d33-88a5-5e4f151a9fb3') {
+        displayName = 'Wessam';
+      } else if (user.id === '6fbf576f-f50e-40fd-bff6-637098e4ace9') {
+        displayName = 'Abdalla';
+      } else {
+        displayName = 'أدمن';
+      }
+    } else {
+      displayName = 'أدمن';
     }
-
-
-    switchPage(targetPage, routeOptions);
-
   }
+
+  $('#roleLabel').textContent = displayName;
+
+  $('#requestsNav').classList.toggle('hidden', role !== 'admin');
+  $('#requestsCard').classList.toggle('hidden', role !== 'admin');
+
+  if (role === 'admin') {
+    await loadPendingCount();
+    startRequestRealtime();
+  }
+
+  switchPage(targetPage, routeOptions);
+}
 
 
   $('#adminLoginBtn').onclick =
