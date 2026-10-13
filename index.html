@@ -944,6 +944,12 @@
       .btn { padding:11px 12px; }
     }
 
+    /* Keep the current account name/role visible on phones. */
+    @media (max-width: 600px) {
+      .brand-meta { display: flex !important; flex-direction: column; align-items: flex-start; gap: 5px; min-width: 0; }
+      .brand-meta strong, #roleLabel { display: inline-block; max-width: 100%; overflow-wrap: anywhere; }
+    }
+
   </style>
 </head>
 
