@@ -889,67 +889,6 @@
       #modalContent .form-actions .btn{flex:1 1 100%}
     }
 
-
-    /* Responsive compatibility patch: keeps the existing design and behavior intact. */
-    html, body { max-width:100%; overflow-x:hidden; }
-    img, video, canvas, iframe { max-width:100%; }
-    .app, .page, .panel, .glass, .login, .login-card, #modalContent { min-width:0; }
-    .table-wrap { max-width:100%; -webkit-overflow-scrolling:touch; }
-    input, select, textarea, button { max-width:100%; }
-    .grid > *, .cards > *, .money-row > *, .toolbar > * { min-width:0; }
-
-    @media (max-width: 900px) {
-      .app { padding:14px; }
-      .topbar { position:relative; top:auto; align-items:flex-start; flex-direction:column; }
-      .topbar > *, .brand, .nav { max-width:100%; }
-      .nav { width:100%; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
-      .nav .btn { width:100%; white-space:normal; }
-      .cards { grid-template-columns:repeat(2,minmax(0,1fr)); }
-      .toolbar { grid-template-columns:repeat(2,minmax(0,1fr)); }
-      .panel-head { align-items:stretch; }
-      .panel-head > * { min-width:0; }
-    }
-
-    @media (max-width: 600px) {
-      .app { padding:10px; }
-      .login { min-height:calc(100vh - 20px); }
-      .login-card { padding:20px 15px; border-radius:22px; }
-      .topbar { padding:12px; gap:12px; border-radius:16px; }
-      .brand { align-items:flex-start; }
-      .brand-badge { flex:0 0 40px; }
-      .nav { grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; }
-      .nav .btn { padding:10px 8px; font-size:13px; }
-      .page { margin-top:12px; }
-      .hero { padding:18px 14px; border-radius:18px; }
-      .hero h1 { font-size:clamp(22px,6vw,30px); overflow-wrap:anywhere; }
-      .cards, .grid, .money-row, .toolbar { grid-template-columns:minmax(0,1fr); }
-      .span-2 { grid-column:auto; }
-      .action-card { padding:18px; }
-      .panel { padding:14px; border-radius:18px; }
-      .panel-head { gap:10px; margin-bottom:15px; }
-      .panel-head h2 { font-size:20px; overflow-wrap:anywhere; }
-      .form-actions { width:100%; }
-      .form-actions .btn { flex:1 1 100%; width:100%; }
-      .table { min-width:900px; }
-      .request-card { padding:14px; }
-      #modalContent { width:100%; max-width:100%; max-height:90vh; overflow:auto; }
-      #modalContent .form-actions .btn { flex:1 1 100%; }
-    }
-
-    @media (max-width: 360px) {
-      .app { padding:7px; }
-      .nav { grid-template-columns:minmax(0,1fr); }
-      .login-card { padding:16px 12px; }
-      .panel { padding:11px; }
-      .btn { padding:11px 12px; }
-    }
-
-    /* Keep the current account name/role visible on phones. */
-    @media (max-width: 600px) {
-      .brand-meta { display: flex !important; flex-direction: column; align-items: flex-start; gap: 5px; min-width: 0; }
-      .brand-meta strong, #roleLabel { display: inline-block; max-width: 100%; overflow-wrap: anywhere; }
-    }
-
   </style>
 </head>
 
@@ -3848,43 +3787,47 @@ async function enterApp(role, targetPage = 'home', routeOptions = {}) {
       requestsPage = 0;
 
 
-    const {
-      data,
-      error,
-      count
-    } =
-      await sb
-        .from('requests')
-        .select(
-          '*',
-          {
-            count:'exact'
-          }
-        )
-        .eq(
-          'status',
-          'pending'
-        )
-        .order(
-          'created_at',
-          {
-            ascending:true
-          }
-        )
-        .range(
-          requestsPage * PAGE_SIZE,
-          (requestsPage + 1) * PAGE_SIZE - 1
-        );
+    let result;
 
+    try{
+      const fetchPendingRequests = () =>
+        sb
+          .from('requests')
+          .select('*', { count:'exact' })
+          .eq('status', 'pending')
+          .order('created_at', { ascending:true })
+          .range(
+            requestsPage * PAGE_SIZE,
+            (requestsPage + 1) * PAGE_SIZE - 1
+          );
 
-    if(error)
-      return toast(
-        'تعذر تحميل الطلبات'
-      );
+      result = await fetchPendingRequests();
 
+      /*
+        على بعض متصفحات الموبايل ممكن جلسة Supabase تكون قديمة.
+        نجدد الجلسة مرة واحدة ثم نعيد طلب البيانات بدل ما نسيب القائمة فاضية.
+      */
+      if(result.error){
+        const refreshed = await sb.auth.refreshSession();
+        if(!refreshed.error){
+          result = await fetchPendingRequests();
+        }
+      }
+    }catch(err){
+      console.error('LOAD PENDING REQUESTS:', err);
+      toast('حصل خطأ في الاتصال أثناء تحميل الطلبات');
+      return;
+    }
 
-    const list =
-      data || [];
+    const { data, error, count } = result || {};
+
+    if(error){
+      console.error('LOAD PENDING REQUESTS:', error);
+      toast('تعذر تحميل الطلبات. جرّب تسجيل الخروج والدخول مرة أخرى');
+      return;
+    }
+
+    const list = Array.isArray(data) ? data : [];
 
 
     requestsTotal =
@@ -3896,12 +3839,14 @@ async function enterApp(role, targetPage = 'home', routeOptions = {}) {
     );
 
 
-    $('#requestsEmpty')
-      .classList
-      .toggle(
-        'hidden',
-        requestsTotal > 0
-      );
+    const emptyRequestsEl = $('#requestsEmpty');
+    const requestsListEl = $('#requestsList');
+
+    emptyRequestsEl.classList.toggle(
+      'hidden',
+      list.length > 0
+    );
+    requestsListEl.classList.toggle('hidden', false);
 
 
     const pages =
