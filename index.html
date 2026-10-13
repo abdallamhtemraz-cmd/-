@@ -889,6 +889,61 @@
       #modalContent .form-actions .btn{flex:1 1 100%}
     }
 
+
+    /* Responsive compatibility patch: keeps the existing design and behavior intact. */
+    html, body { max-width:100%; overflow-x:hidden; }
+    img, video, canvas, iframe { max-width:100%; }
+    .app, .page, .panel, .glass, .login, .login-card, #modalContent { min-width:0; }
+    .table-wrap { max-width:100%; -webkit-overflow-scrolling:touch; }
+    input, select, textarea, button { max-width:100%; }
+    .grid > *, .cards > *, .money-row > *, .toolbar > * { min-width:0; }
+
+    @media (max-width: 900px) {
+      .app { padding:14px; }
+      .topbar { position:relative; top:auto; align-items:flex-start; flex-direction:column; }
+      .topbar > *, .brand, .nav { max-width:100%; }
+      .nav { width:100%; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .nav .btn { width:100%; white-space:normal; }
+      .cards { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .toolbar { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .panel-head { align-items:stretch; }
+      .panel-head > * { min-width:0; }
+    }
+
+    @media (max-width: 600px) {
+      .app { padding:10px; }
+      .login { min-height:calc(100vh - 20px); }
+      .login-card { padding:20px 15px; border-radius:22px; }
+      .topbar { padding:12px; gap:12px; border-radius:16px; }
+      .brand { align-items:flex-start; }
+      .brand-badge { flex:0 0 40px; }
+      .nav { grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; }
+      .nav .btn { padding:10px 8px; font-size:13px; }
+      .page { margin-top:12px; }
+      .hero { padding:18px 14px; border-radius:18px; }
+      .hero h1 { font-size:clamp(22px,6vw,30px); overflow-wrap:anywhere; }
+      .cards, .grid, .money-row, .toolbar { grid-template-columns:minmax(0,1fr); }
+      .span-2 { grid-column:auto; }
+      .action-card { padding:18px; }
+      .panel { padding:14px; border-radius:18px; }
+      .panel-head { gap:10px; margin-bottom:15px; }
+      .panel-head h2 { font-size:20px; overflow-wrap:anywhere; }
+      .form-actions { width:100%; }
+      .form-actions .btn { flex:1 1 100%; width:100%; }
+      .table { min-width:900px; }
+      .request-card { padding:14px; }
+      #modalContent { width:100%; max-width:100%; max-height:90vh; overflow:auto; }
+      #modalContent .form-actions .btn { flex:1 1 100%; }
+    }
+
+    @media (max-width: 360px) {
+      .app { padding:7px; }
+      .nav { grid-template-columns:minmax(0,1fr); }
+      .login-card { padding:16px 12px; }
+      .panel { padding:11px; }
+      .btn { padding:11px 12px; }
+    }
+
   </style>
 </head>
 
